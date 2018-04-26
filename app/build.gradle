@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+        dexOptions {
+            incremental = true;
+            preDexLibraries = false
+            javaMaxHeapSize "2g"
+        }
+
+    defaultConfig {
+        applicationId "com.mobile_me.imtv_player"
+        minSdkVersion 19
+        targetSdkVersion 23
+        versionCode 51
+        versionName "1.051"
+    }
+    signingConfigs {
+        debug {
+            storeFile file("../../mobileme-keystore.jks")
+            storePassword "mobileme"
+            keyAlias "mobileme"
+            keyPassword "mobileme"
+        }
+        release {
+            storeFile file("../../mobileme-keystore.jks")
+            storePassword "mobileme"
+            keyAlias "mobileme"
+            keyPassword "mobileme"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    output.outputFile = new File(output.outputFile.parent,
+                            "imtv-player-release-"+versionName+".apk"
+                    )
+                }
+            }
+        }
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+dependencies {
+    compile project(':rootshell')
+    compile project(':roottools')
+//    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.4.1'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
+    compile 'com.squareup.retrofit:retrofit:2.0.0-beta1'
+    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta1'
+    compile 'com.squareup.retrofit:adapter-rxjava:2.0.0-beta1'
+    //compile 'org.apache.commons:commons-collections4:4.1'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
+
+    compile ('com.google.android.exoplayer:exoplayer:r2.5.4') {
+        exclude module: 'support-v4'
+        exclude module: 'appcompat-v7'
+        exclude group : 'com.android.support'
+    }
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.powermock:powermock-api-mockito:1.6.1'
+    testCompile 'org.powermock:powermock-module-junit4-rule-agent:1.6.1'
+    testCompile 'org.powermock:powermock-module-junit4-rule:1.6.1'
+    testCompile 'org.powermock:powermock-module-junit4:1.6.1'
+
+}
+
+repositories {
+    jcenter()
+    maven {
+        url "https://maven.google.com"
+    }
+}
+
+android {
+    lintOptions {
+        abortOnError false
+    }
+}

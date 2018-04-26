@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IMTV_mobile.iml" filepath="$PROJECT_DIR$/.idea/modules/IMTV_mobile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/imtv-guardian/imtv-guardian.iml" filepath="$PROJECT_DIR$/.idea/modules/imtv-guardian/imtv-guardian.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rootshell/rootshell.iml" filepath="$PROJECT_DIR$/.idea/modules/rootshell/rootshell.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/roottools/roottools.iml" filepath="$PROJECT_DIR$/.idea/modules/roottools/roottools.iml" />
+    </modules>
+  </component>
+</project>
