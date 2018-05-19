@@ -37,12 +37,7 @@ public class SettingsLoader implements IMTCallbackEvent {
 
     public SettingsLoader(Dao dao) {
         this.dao = dao;
-        File p = new File(dao.getDownFolder().getAbsolutePath(), new File(dao.getRemoteSettingsInFilePath()).getParent());
-        p.mkdirs();
-        File f = new File(dao.getDownFolder().getAbsolutePath(), dao.getRemoteSettingsInFilePath());
-        f.delete();
-
-        helper = new MTOwnCloudHelper(dao.getRemoteSettingsInFilePath(), dao.getContext(), this, MTOwnCloudHelper.TYPEFILE_SIMPLE);
+        helper = new MTOwnCloudHelper(null, dao.getContext(), this, MTOwnCloudHelper.TYPEFILE_SIMPLE);
         sdf = new SimpleDateFormat("yyMMdd-HHmmss");
     }
 

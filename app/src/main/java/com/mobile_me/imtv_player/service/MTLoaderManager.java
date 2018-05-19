@@ -35,8 +35,8 @@ public class MTLoaderManager implements IMTCallbackEvent {
 
     public MTLoaderManager(Context ctx) {
         this.ctx = ctx;
-        helpers.add(new MTOwnCloudHelper(Dao.getInstance(ctx).getRemotePlayListFilePath(), ctx, this));
-        helpers.add(new MTOwnCloudHelper(Dao.getInstance(ctx).getRemotePlayList2FilePath(), ctx, this));
+        helpers.add(new MTOwnCloudHelper(null, ctx, this));
+        helpers.add(new MTOwnCloudHelper(null, ctx, this));
 
         CustomExceptionHandler.log("helper created");
 
@@ -121,7 +121,8 @@ public class MTLoaderManager implements IMTCallbackEvent {
     @Override
     public void onError(int mode, MTOwnCloudHelper ownCloudHelper, Throwable t) {
         // тут ничего не делаем... запустится сам по тамеру в следующий раз
-        CustomExceptionHandler.log("onVideoFileLoaded failed.");
+        t.printStackTrace();
+        CustomExceptionHandler.logException("loadVideoFileFromPlayList failed.", t);
     }
 
     @Override

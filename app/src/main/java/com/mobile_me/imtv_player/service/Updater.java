@@ -26,7 +26,7 @@ public class Updater implements IMTCallbackEvent {
     private MTOwnCloudHelper helper;
     public Updater(Context ctx) {
         this.ctx = ctx;
-        helper = new MTOwnCloudHelper(Dao.getInstance(ctx).getRemoteUpdateFilePath(), ctx, this);
+        helper = new MTOwnCloudHelper(null, ctx, this);
         CustomExceptionHandler.log("Updater created");
     }
 
@@ -83,8 +83,7 @@ public class Updater implements IMTCallbackEvent {
         // вызвать установку
         try {
             CustomExceptionHandler.log("Updater success downloading");
-            String path = Environment.getExternalStorageDirectory() + "/imtv";
-            File newFile = new File(path, Dao.getInstance(ctx).getRemoteUpdateFilePath());
+            File newFile = new File(Dao.getInstance(ctx).getUpdateApkPath(), ctx.getString(R.string.updateapk_filename));
             CustomExceptionHandler.log("Updater newFile= " + newFile + " check is need to install");
             // нужно проверить надо ли установить, т.к.  иначе уйдем в бесконечный цикл
             Updater.checkVersionAndInstall(newFile, ctx);
@@ -116,8 +115,7 @@ public class Updater implements IMTCallbackEvent {
     @Override
     public void onFileInfoLoaded(MTFileApkInfo newFileInfo) {
         // Проверить, есть ли уже такой скачанный файл (по длине)
-        String path = Environment.getExternalStorageDirectory() + "/imtv";
-        File existedFile = new File(path, Dao.getInstance(ctx).getRemoteUpdateFilePath());
+        File existedFile = new File(Dao.getInstance(ctx).getUpdateApkPath(), ctx.getString(R.string.updateapk_filename));
         CustomExceptionHandler.log("onFileInfoLoaded check file: exists:"+existedFile.exists()+", fileLength="+existedFile.length()+", newFileLength="+newFileInfo.getSize());
         if (newFileInfo.getSize() == 0) return; // FIXME: убрать потом чтобы обновлялось нормально
         if (existedFile.exists()  && existedFile.length() == newFileInfo.getSize()) { // TODO: потом сделать по MD5

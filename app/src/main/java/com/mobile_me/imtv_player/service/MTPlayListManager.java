@@ -172,10 +172,10 @@ public class MTPlayListManager implements IMTLogger {
                     // а также удалить файлы, которых нет уже в новом
                     // файлы взять из директории
                     //File dirVideos = new File(dao.getDownVideoFolder());
-                    List<File> files = getListFiles(new File(dao.getDownVideoFolder()));
+                    List<File> files = getListFiles(new File(dao.getVideoPath()));
                     for (File f : files) {
                         // если в новом его нет
-                        MTPlayListRec found = playListNew.searchByFileName(f.getAbsolutePath(), dao.getDownVideoFolder());
+                        MTPlayListRec found = playListNew.searchByFileName(f.getAbsolutePath(), dao.getVideoPath());
                         if (found == null) {
                             // удалим саму запись, сам видеофайл тоже
                             CustomExceptionHandler.log("delete old video file "+f.getName());
@@ -196,7 +196,7 @@ public class MTPlayListManager implements IMTLogger {
                 // по списку файлов пройтись и сравнить их с текущими. Если различаюься - поставить флаг необходимости скачивания
                 for (MTPlayListRec f : playList.getPlaylist()) {
                     // прочитать локальные данные файла
-                    File finfo = new File(dao.getDownVideoFolder(), f.getFilename());
+                    File finfo = new File(dao.getVideoPath(), f.getFilename());
                     //log("loadVideoFileFromPlayList check file info for = "+finfo.getAbsolutePath());
                     if (finfo.exists() && finfo.length() == f.getSize()) { // TODO: потом сделать по MD5
                         f.setState(MTPlayListRec.STATE_UPTODATE);
@@ -228,7 +228,7 @@ public class MTPlayListManager implements IMTLogger {
     public boolean checkPlayListFilesOnDisk(MTPlayList playListTest) {
         boolean result = false;
         CustomExceptionHandler.log("checkPlayListFilesOnDisk playListTest="+playListTest);
-            File path = new File(dao.definePathToVideo(), ctx.getString(R.string.video_dir));
+            File path = new File(dao.getVideoPath());
             for (MTPlayListRec plr : playListTest.getPlaylist()) {
                 File f = new File(path, plr.getFilename());
                 if (plr.getState() == MTPlayListRec.STATE_UPTODATE) {

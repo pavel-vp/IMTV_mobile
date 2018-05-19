@@ -407,10 +407,10 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
                         forcedPlay = true;
                         found = playListManager.getNextVideoFileForPlay(forcedPlay);
                     }
-                    filePathToPlay = dao.getDownVideoFolder() + found.getFilename();
+                    filePathToPlay = dao.getVideoPath() + found.getFilename();
                 } else {
                     found = playListManager.getRandomFile();
-                    filePathToPlay = dao.getDownVideoFolder() + found.getFilename();
+                    filePathToPlay = dao.getVideoPath() + found.getFilename();
                 }
                 if (filePathToPlay != null && isActive && found != null) {
                     // запустить проигрывание этого файла

@@ -10,14 +10,14 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MTFileApkInfo implements Serializable {
     private String fn;
-    private String dateTime;
+    private String date;
     private Long size;
 
     @Override
     public String toString() {
         return "MTFileApkInfo{" +
                 "fn='" + fn + '\'' +
-                ", dateTime='" + dateTime + '\'' +
+                ", date='" + date + '\'' +
                 ", size=" + size +
                 '}';
     }
@@ -26,8 +26,8 @@ public class MTFileApkInfo implements Serializable {
         return fn;
     }
 
-    public String getDateTime() {
-        return dateTime;
+    public String getDate() {
+        return date;
     }
 
     public Long getSize() {

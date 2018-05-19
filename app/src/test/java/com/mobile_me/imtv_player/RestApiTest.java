@@ -6,7 +6,7 @@ import com.mobile_me.imtv_player.model.MTGlobalSetupRec;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.model.MTStatRec;
 import com.mobile_me.imtv_player.service.rest.MTRestHelper;
-import com.squareup.okhttp.ResponseBody;
+import okhttp3.ResponseBody;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import retrofit.Response;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -92,7 +91,7 @@ public class RestApiTest {
     public void postLog() throws IOException {
         String base64 = "392827982792874892498247892";
         ResponseBody body = restHelper.postLogSync("8656546742", base64);
-        System.out.println(body);
+        System.out.println(body.string());
     }
 
     @Test

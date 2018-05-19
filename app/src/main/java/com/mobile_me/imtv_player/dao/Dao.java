@@ -36,7 +36,7 @@ public class Dao {
 
     public final static String DB_NAME = "imtv_player_db";
     public final static int DB_VERSION = 3;
-    public final static String PATH_KEY = "path_key";
+    public final static String PATH_KEY = "base_path_key";
     public final static String DEVICEID_KEY = "deviceid_key";
     public final static String LASTTIMESETTINGS_KEY = "lasttimesettings_key";
     public final static String MIN_COUNT_FREE = "min_count_free";
@@ -51,14 +51,11 @@ public class Dao {
     private PlayListDBHelper mPlayListDBHelper;
     private StatisticDBHelper mStatisticDBHelper;
     private SharedPreferences mSharedPreferences;
-    File downFolder;
-    String remotePlayListFilePath;
-    String remotePlayList2FilePath;
-    String remoteUpdateFilePath;
-    String remoteVideoDir;
-    String remoteSettingsInFilePath;
-    String remoteSettingsNewFilePath;
-    String downVideoFolder;
+
+    private File baseFolder;
+    private File videoPath;
+    private File updateApkPath;
+
     String deviceId;
     private MTPlayListManager playListManager;
     private MTPlayListManager playListManager2;
@@ -94,7 +91,6 @@ public class Dao {
 //            CustomExceptionHandler.log();
         }
 
-        this.mStatisticDBHelper.deleteOldData();
 
 /*        TelephonyManager telephonyManager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
         deviceId = telephonyManager.getDeviceId();
@@ -146,51 +142,36 @@ deviceId = "b8b58378e361";
 //            System.exit(0);
         }
 
-
-//        downFolder = act.getExternalFilesDir(act.getString(R.string.download_folder_path));
-        downFolder = definePathToVideo();
-        downFolder.mkdir();
-        remotePlayListFilePath = "/" + String.format(ctx.getString(R.string.playlist_filepath), deviceId);
-        remotePlayList2FilePath = "/" + String.format(ctx.getString(R.string.playlist2_filepath), deviceId);
-        remoteUpdateFilePath = "/" + ctx.getString(R.string.updateapk_filepath);
-        remoteVideoDir = "/" + ctx.getString(R.string.video_dir) ;
-        remoteSettingsInFilePath = "/" + String.format(ctx.getString(R.string.settings_in_filepath), deviceId);
-        remoteSettingsNewFilePath = "/" + String.format(ctx.getString(R.string.settings_new_filepath), deviceId);
+        // базовый путь
+        baseFolder = definePathToVideo();
 
         // создадим директории
-        File dv = new File(downFolder, ctx.getString(R.string.video_dir));
-        dv.mkdir();
-        downVideoFolder = dv.getAbsolutePath();
-        File dp = new File(new File(downFolder, String.format(ctx.getString(R.string.playlist_filepath), deviceId)).getParent());
-        dp.mkdir();
+        videoPath = new File(baseFolder, "Video");
+        videoPath.mkdir();
+        updateApkPath = new File(baseFolder, "UpdateApk");
+        updateApkPath.mkdir();
+
         CustomExceptionHandler.log("DAO created");
-        CustomExceptionHandler.log("downFolder="+downFolder);
-        CustomExceptionHandler.log("remotePlayListFilePath="+remotePlayListFilePath);
-        CustomExceptionHandler.log("remotePlayList2FilePath="+remotePlayList2FilePath);
-        CustomExceptionHandler.log("remoteUpdateFilePath="+remoteUpdateFilePath);
-        CustomExceptionHandler.log("remoteVideoDir="+remoteVideoDir);
-        CustomExceptionHandler.log("downVideoFolder="+downVideoFolder);
-        CustomExceptionHandler.log("remoteSettingsInFilePath="+remoteSettingsInFilePath);
-        CustomExceptionHandler.log("remoteSettingsNewFilePath="+remoteSettingsNewFilePath);
+        CustomExceptionHandler.log("baseFolder="+baseFolder.getAbsolutePath());
+        CustomExceptionHandler.log("videoPath="+getVideoPath());
+        CustomExceptionHandler.log("updateApkPath="+getUpdateApkPath());
+        this.mStatisticDBHelper.deleteOldData();
     }
 
-
-
-
-    public File definePathToVideo() {
+    private File definePathToVideo() {
         File path = null;
         String p = mSharedPreferences.getString(PATH_KEY, null);
         if (p != null) {
             path = new File(p);
         }
-        CustomExceptionHandler.log("definePathToVideo stored path="+path);
+        CustomExceptionHandler.log("define base path stored path="+path);
         // если пусто
         if (p == null || !Environment.MEDIA_MOUNTED.equals(EnvironmentCompat.getStorageState(path))
                 || Environment.MEDIA_MOUNTED_READ_ONLY.equals(EnvironmentCompat.getStorageState(path))
                 || !path.exists()
                 || !path.canWrite() ) {
             path = getBestAvailableFilesRoot();
-            CustomExceptionHandler.log("definePathToVideo getbestpath path="+path);
+            CustomExceptionHandler.log("define base path getbestpath path="+path);
             SharedPreferences.Editor ed = mSharedPreferences.edit();
             ed.putString(PATH_KEY, path.getAbsolutePath());
             ed.commit();
@@ -199,7 +180,7 @@ deviceId = "b8b58378e361";
         return path;
     }
 
-    public File getBestAvailableFilesRoot() {
+    private File getBestAvailableFilesRoot() {
         // FIXME: переделать на приоритеты (usb - 1, ext_sd - 2, emulated - 3, если нет ничего - то локальное)
 
         File[] roots = new File[0];
@@ -221,10 +202,7 @@ deviceId = "b8b58378e361";
                         && root.canWrite() ) {
                     CustomExceptionHandler.log("getBestAvailableFilesRoot root="+root);
                     long freeSize = root.getFreeSpace();
-                    File dv = new File(root, ctx.getString(R.string.video_dir));
-                    boolean res = dv.mkdirs();
-                    if (res && (best == null  || freeSize > best.getFreeSpace())) {
-                        dv.delete();
+                    if ((best == null  || freeSize > best.getFreeSpace())) {
                         best = root;
                     }
                 }
@@ -241,31 +219,9 @@ deviceId = "b8b58378e361";
         return mPlayListDBHelper;
     }
 
-    public String getDownVideoFolder() {
-        return downVideoFolder;
-    }
-
-
-    public String getRemotePlayListFilePath() {
-        return remotePlayListFilePath;
-    }
-
-
-    public File getDownFolder() {
-        return downFolder;
-    }
-
-
-    public String getRemoteVideoDir() {
-        return remoteVideoDir;
-    }
 
     public String getDeviceId() {
         return deviceId;
-    }
-
-    public String getRemotePlayList2FilePath() {
-        return remotePlayList2FilePath;
     }
 
 
@@ -290,23 +246,10 @@ deviceId = "b8b58378e361";
         return getPlayListManager();
     }
 
-    public String getRemoteUpdateFilePath() {
-        return remoteUpdateFilePath;
-    }
-
-
     public Context getContext() {
         return ctx;
     }
 
-
-    public String getRemoteSettingsInFilePath() {
-        return remoteSettingsInFilePath;
-    }
-
-    public String getRemoteSettingsNewFilePath() {
-        return remoteSettingsNewFilePath;
-    }
 
     public Boolean getTerminated() {
         return isTerminated;
@@ -356,5 +299,13 @@ deviceId = "b8b58378e361";
         ed.apply();
         CustomExceptionHandler.log("setupRec has set  ");
     }
+    public String getVideoPath() {
+        return videoPath.getAbsolutePath();
+    }
+
+    public String getUpdateApkPath() {
+        return updateApkPath.getAbsolutePath();
+    }
+
 
 }

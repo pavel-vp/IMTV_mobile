@@ -3,15 +3,20 @@ package com.mobile_me.imtv_player.service.rest;
 import android.util.Log;
 import com.mobile_me.imtv_player.api.IMTApi;
 import com.mobile_me.imtv_player.model.*;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.ResponseBody;
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import org.apache.commons.codec.binary.Base64;
-import retrofit.*;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by pasha on 06.03.18.
@@ -29,7 +34,11 @@ public class MTRestHelper {
     }
 
     public MTRestHelper(String baseUrl) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .build();
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -92,7 +101,7 @@ public class MTRestHelper {
             public void run() {
                 getPlayList(new Callback<MTPlayListRec[]>() {
                     @Override
-                    public void onResponse(Response<MTPlayListRec[]> response) {
+                    public void onResponse(Call<MTPlayListRec[]> call, Response<MTPlayListRec[]> response) {
                         Log.v("MT", "sent ok response=" + response.body());
                         if (response.body() != null) {
                             MTPlayList playlist = new MTPlayList();
@@ -106,7 +115,7 @@ public class MTRestHelper {
                     }
 
                     @Override
-                    public void onFailure(Throwable t) {
+                    public void onFailure(Call<MTPlayListRec[]> call, Throwable t) {
                         cb.onError(t);
                     }
                 }, deviceid);
@@ -130,14 +139,18 @@ public class MTRestHelper {
 
     public ResponseBody postLogSync(String deviceid, String zipBase64) throws IOException {
         Calendar calendar = Calendar.getInstance();
-        Call<ResponseBody> callRes = service.uploadLog(deviceid, String.valueOf(calendar.getTimeInMillis()), zipBase64);
+        MTLogUploadRec r = new MTLogUploadRec();
+        r.setData(zipBase64);
+        Call<ResponseBody> callRes = service.uploadLog(deviceid, String.valueOf(calendar.getTimeInMillis()), r);
         Response<ResponseBody> resp = callRes.execute();
         return resp.body();
     }
 
     public void postLog(Callback<ResponseBody> cb, String deviceid, String zipBase64)  {
         Calendar calendar = Calendar.getInstance();
-        Call<ResponseBody> callRes = service.uploadLog(deviceid, String.valueOf(calendar.getTimeInMillis()), zipBase64);
+        MTLogUploadRec r = new MTLogUploadRec();
+        r.setData(zipBase64);
+        Call<ResponseBody> callRes = service.uploadLog(deviceid, String.valueOf(calendar.getTimeInMillis()), r);
         callRes.enqueue(cb);
     }
 

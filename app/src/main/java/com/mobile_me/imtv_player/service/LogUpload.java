@@ -39,7 +39,7 @@ public class LogUpload implements IMTCallbackEvent {
     public synchronized void startUpload() {
         try {
             // Процесс фоновой загрузки логов на сервер
-            CustomExceptionHandler.log("try startUpload");
+            CustomExceptionHandler.log("try startUpload log");
             lastFile = null;
 
             String zipPostfix = dao.getDeviceId() + "_" + sdf.format(Calendar.getInstance().getTime());

@@ -70,8 +70,8 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
             e.printStackTrace();
         }
 
-        helpers.add(new MTOwnCloudHelper(Dao.getInstance(this).getRemotePlayListFilePath(), this, this));
-        helpers.add(new MTOwnCloudHelper(Dao.getInstance(this).getRemotePlayList2FilePath(), this, this));
+        helpers.add(new MTOwnCloudHelper(null, this, this));
+        helpers.add(new MTOwnCloudHelper(null, this, this));
         loadedCompleted.add(false);
         loadedCompleted.add(false);
         CustomExceptionHandler.log("logo created");

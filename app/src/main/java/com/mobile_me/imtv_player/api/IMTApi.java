@@ -1,13 +1,12 @@
 package com.mobile_me.imtv_player.api;
 
 import com.mobile_me.imtv_player.model.*;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
-import retrofit.Call;
-import retrofit.http.Body;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Query;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 import java.util.List;
 
@@ -32,14 +31,14 @@ public interface IMTApi {
     Call<ResponseBody> getVideoFile(@Query("fn") String filepath);
 
     // выгрузить на севрер статистику по девайсу
-    // http://crm.darilkin-shop.ru/api/video/setStats.php?code=001f5459d641&date=1523863157394&data=[{"dt":"1523863157394","id":935,"lat":0.0,"lon":0.0},{"dt":"1523863157394","id":935,"lat":0.0,"lon":0.0}]
-    @POST("video/setStats.php")
+    //http://crm.darilkin-shop.ru/api/stats/setStats.php?code=001f5459d641&date=1523863157394
+    @POST("stats/setStats.php")
     Call<ResponseBody> uploadStat(@Query("code") String iddevice, @Query("date") String date, @Body List<MTStatRec> data);
 
     // Выгрузить на сервер лог по девайсу
-    // http://crm.darilkin-shop.ru/api/log/setLog.php?code=001f5459d641&date=1523863157394&data=(base64 zip file)
+    // http://crm.darilkin-shop.ru/api/log/setLog.php?code=001f5459d641&date=1523863157394
     @POST("log/setLog.php")
-    Call<ResponseBody> uploadLog(@Query("code") String iddevice, @Query("date") String date, @Body String zipBase64);
+    Call<ResponseBody> uploadLog(@Query("code") String iddevice, @Query("date") String date, @Body MTLogUploadRec zipBase64);
 
     // загрузить информацию о файле апк
     @GET("apk/getLastAPK.php")
