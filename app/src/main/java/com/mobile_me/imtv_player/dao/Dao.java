@@ -102,7 +102,7 @@ public class Dao {
         } else {
 
         }
-deviceId = "b8b58378e361";
+//deviceId = "b8b58378e361";
         CustomExceptionHandler.log("version:"+BuildConfig.VERSION_CODE);
         CustomExceptionHandler.log("deviceId:"+deviceId);
         String savedDeviceID = mSharedPreferences.getString(DEVICEID_KEY, null);

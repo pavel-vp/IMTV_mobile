@@ -2,7 +2,7 @@ package com.mobile_me.imtv_player.service;
 
 import android.util.Base64;
 import com.mobile_me.imtv_player.R;
-        import com.mobile_me.imtv_player.dao.Dao;
+import com.mobile_me.imtv_player.dao.Dao;
 import com.mobile_me.imtv_player.model.MTFileApkInfo;
 import com.mobile_me.imtv_player.model.MTGlobalSetupRec;
 import com.mobile_me.imtv_player.model.MTPlayList;
@@ -99,7 +99,7 @@ public class LogUpload implements IMTCallbackEvent {
         }
     }
 
-    private String readFileAsStringAndEncode64(String absolutePath) {
+    public static String readFileAsStringAndEncode64(String absolutePath) {
         try {
             BufferedReader br= new BufferedReader(new FileReader(absolutePath));
             StringBuilder sb = new StringBuilder();
@@ -108,11 +108,10 @@ public class LogUpload implements IMTCallbackEvent {
                 sb.append(line).append("\n");
             }
             String data = Base64.encodeToString(sb.toString().getBytes(), Base64.DEFAULT);
-            CustomExceptionHandler.log("log compressed to "+data.length());
             return data;
         } catch (Exception e) {
             e.printStackTrace();
-            CustomExceptionHandler.logException("error while compressing file to str", e);
+            //CustomExceptionHandler.logException("error while compressing file to str", e);
         }
         return "";
     }

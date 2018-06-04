@@ -1,15 +1,21 @@
 package com.mobile_me.imtv_player;
 
+
+//import android.util.Base64;
+import android.util.Base64;
 import android.util.Log;
 import com.mobile_me.imtv_player.model.MTFileApkInfo;
 import com.mobile_me.imtv_player.model.MTGlobalSetupRec;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.model.MTStatRec;
+import com.mobile_me.imtv_player.service.LogUpload;
 import com.mobile_me.imtv_player.service.rest.MTRestHelper;
 import okhttp3.ResponseBody;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -21,6 +27,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Created by pasha on 18.03.18.
@@ -35,6 +46,19 @@ public class RestApiTest {
     @Before
     public void setUp() {
         PowerMockito.mockStatic(Log.class);
+        PowerMockito.mockStatic(Base64.class);
+        when(Base64.encode((byte[]) any(), anyInt())).thenAnswer(new Answer<byte[]>() {
+            @Override
+            public byte[] answer(InvocationOnMock invocation) throws Throwable {
+                return org.apache.commons.codec.binary.Base64.encodeBase64((byte[]) invocation.getArguments()[0]);
+            }
+        });
+        when(Base64.decode(anyString(), anyInt())).thenAnswer(new Answer<byte[]>() {
+            @Override
+            public byte[] answer(InvocationOnMock invocation) throws Throwable {
+                return org.apache.commons.codec.binary.Base64.decodeBase64((String) invocation.getArguments()[0]);
+            }
+        });
         this.restHelper = MTRestHelper.getInstance("http://crm.darilkin-shop.ru/api/");
     }
 
@@ -89,8 +113,10 @@ public class RestApiTest {
 
     @Test
     public void postLog() throws IOException {
-        String base64 = "392827982792874892498247892";
-        ResponseBody body = restHelper.postLogSync("8656546742", base64);
+        String fileName = "/home/pasha/qqq.zip";
+
+        String zipBase64 = LogUpload.readFileAsStringAndEncode64(fileName);
+        ResponseBody body = restHelper.postLogSync("8656546742", zipBase64);
         System.out.println(body.string());
     }
 
