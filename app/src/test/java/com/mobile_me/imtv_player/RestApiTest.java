@@ -46,19 +46,19 @@ public class RestApiTest {
     @Before
     public void setUp() {
         PowerMockito.mockStatic(Log.class);
-        PowerMockito.mockStatic(Base64.class);
-        when(Base64.encode((byte[]) any(), anyInt())).thenAnswer(new Answer<byte[]>() {
-            @Override
-            public byte[] answer(InvocationOnMock invocation) throws Throwable {
-                return org.apache.commons.codec.binary.Base64.encodeBase64((byte[]) invocation.getArguments()[0]);
-            }
-        });
+/*        PowerMockito.mockStatic(Base64.class);
         when(Base64.decode(anyString(), anyInt())).thenAnswer(new Answer<byte[]>() {
             @Override
             public byte[] answer(InvocationOnMock invocation) throws Throwable {
                 return org.apache.commons.codec.binary.Base64.decodeBase64((String) invocation.getArguments()[0]);
             }
         });
+        when(Base64.encode((byte[]) any(), anyInt())).thenAnswer(new Answer<byte[]>() {
+            @Override
+            public byte[] answer(InvocationOnMock invocation) throws Throwable {
+                return org.apache.commons.codec.binary.Base64.encodeBase64((byte[]) invocation.getArguments()[0]);
+            }
+        });*/
         this.restHelper = MTRestHelper.getInstance("http://crm.darilkin-shop.ru/api/");
     }
 

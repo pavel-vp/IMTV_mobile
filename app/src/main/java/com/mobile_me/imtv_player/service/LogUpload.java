@@ -101,13 +101,12 @@ public class LogUpload implements IMTCallbackEvent {
 
     public static String readFileAsStringAndEncode64(String absolutePath) {
         try {
-            BufferedReader br= new BufferedReader(new FileReader(absolutePath));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            String data = Base64.encodeToString(sb.toString().getBytes(), Base64.DEFAULT);
+            RandomAccessFile f = new RandomAccessFile(absolutePath, "r");
+            byte[] b = new byte[(int)f.length()];
+            f.readFully(b);
+
+            String data = Base64.encodeToString(b, Base64.DEFAULT);
+            //String data = org.apache.commons.codec.binary.Base64.encodeBase64String(b);
             return data;
         } catch (Exception e) {
             e.printStackTrace();

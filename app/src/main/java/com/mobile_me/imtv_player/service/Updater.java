@@ -117,7 +117,7 @@ public class Updater implements IMTCallbackEvent {
         // Проверить, есть ли уже такой скачанный файл (по длине)
         File existedFile = new File(Dao.getInstance(ctx).getUpdateApkPath(), ctx.getString(R.string.updateapk_filename));
         CustomExceptionHandler.log("onFileInfoLoaded check file: exists:"+existedFile.exists()+", fileLength="+existedFile.length()+", newFileLength="+newFileInfo.getSize());
-        if (newFileInfo.getSize() == 0) return; // FIXME: убрать потом чтобы обновлялось нормально
+        //if (newFileInfo.getSize() == 0) return; // FIXME: убрать потом чтобы обновлялось нормально
         if (existedFile.exists()  && existedFile.length() == newFileInfo.getSize()) { // TODO: потом сделать по MD5
             // ничего не делаем, т.к. файлы иентичные
             CustomExceptionHandler.log("onFileInfoLoaded files are identical, try to check version number with current");

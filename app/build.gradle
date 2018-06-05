@@ -13,8 +13,8 @@ android {
         applicationId "com.mobile_me.imtv_player"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 51
-        versionName "1.051"
+        versionCode 52
+        versionName "1.052"
     }
     signingConfigs {
         debug {
@@ -61,7 +61,7 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.4.0'
     compile 'com.squareup.retrofit2:converter-gson:2.4.0'
     compile 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
-    //compile 'org.apache.commons:commons-collections4:4.1'
+    compile 'org.apache.commons:commons-collections4:4.1'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
 
     compile ('com.google.android.exoplayer:exoplayer:r2.5.4') {
