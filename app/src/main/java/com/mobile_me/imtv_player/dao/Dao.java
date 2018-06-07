@@ -103,6 +103,7 @@ public class Dao {
 
         }
 //deviceId = "b8b58378e361";
+//deviceId = "f8a62d97e8ca";
         CustomExceptionHandler.log("version:"+BuildConfig.VERSION_CODE);
         CustomExceptionHandler.log("deviceId:"+deviceId);
         String savedDeviceID = mSharedPreferences.getString(DEVICEID_KEY, null);
@@ -148,7 +149,7 @@ public class Dao {
         // создадим директории
         videoPath = new File(baseFolder, "Video");
         videoPath.mkdir();
-        updateApkPath = new File(baseFolder, "UpdateApk");
+        updateApkPath = new File(Environment.getExternalStorageDirectory(), "ImtvUpdateApk");
         updateApkPath.mkdir();
 
         CustomExceptionHandler.log("DAO created");

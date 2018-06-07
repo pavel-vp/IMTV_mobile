@@ -14,7 +14,8 @@ import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 
-import java.io.File;
+import java.io.*;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,6 +51,36 @@ public class Updater implements IMTCallbackEvent {
             Updater.installAPKonRooted(newFile.getAbsolutePath(), ctx);
         }
     }
+
+    static class ReadStream implements Runnable {
+        String name;
+        InputStream is;
+        Thread thread;
+        public ReadStream(String name, InputStream is) {
+            this.name = name;
+            this.is = is;
+        }
+        public void start () {
+            thread = new Thread (this);
+            thread.start ();
+        }
+        public void run () {
+            try {
+                InputStreamReader isr = new InputStreamReader (is);
+                BufferedReader br = new BufferedReader (isr);
+                while (true) {
+                    String s = br.readLine ();
+                    if (s == null) break;
+                    CustomExceptionHandler.log( "Updater [" + name + "] " + s);
+                }
+                is.close ();
+            } catch (Exception ex) {
+                CustomExceptionHandler.log( "Updater Problem reading stream " + name + "... :" + ex);
+                ex.printStackTrace ();
+            }
+        }
+    }
+
 
     public static void installAPKonRooted(String filename, Context ctx) throws Exception {
         File file = new File(filename);

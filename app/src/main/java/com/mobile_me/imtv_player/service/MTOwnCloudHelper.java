@@ -133,32 +133,37 @@ public class MTOwnCloudHelper  {
             CustomExceptionHandler.log("loadVideoFileFromPlayList fileToLoad=" + fileToLoad.getFilename());
             restHelper.getVideoFile(new Callback<ResponseBody>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    CustomExceptionHandler.log("loadVideoFileFromPlayList file loaded");
-                    // загрузили файл из плейлиста
-                    String s = null;
-                    try {
-                        s = response.body().string().replaceAll("\"", "");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    byte[] d = Base64.decode(s.getBytes(), 0);
+                public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            CustomExceptionHandler.log("loadVideoFileFromPlayList file loaded");
+                            // загрузили файл из плейлиста
+                            String s = null;
+                            try {
+                                s = response.body().string().replaceAll("\"", "");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            byte[] d = Base64.decode(s.getBytes(), 0);
 
-                    File file = new File(dao.getVideoPath(), fileToLoad.getFilename());
+                            File file = new File(dao.getVideoPath(), fileToLoad.getFilename());
 
-                    File parentDir = new File(file.getParent());
-                    parentDir.mkdir();
-                    try {
-                        FileOutputStream fos = null;
-                        fos = new FileOutputStream(file);
-                        fos.write(d);
-                        fos.flush();
-                        fos.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    CustomExceptionHandler.log("loadVideoFileFromPlayList file saved to disk");
-                    cb.onVideoFileLoaded(fileToLoad, MTOwnCloudHelper.this);
+                            File parentDir = new File(file.getParent());
+                            parentDir.mkdir();
+                            try {
+                                FileOutputStream fos = null;
+                                fos = new FileOutputStream(file);
+                                fos.write(d);
+                                fos.flush();
+                                fos.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            CustomExceptionHandler.log("loadVideoFileFromPlayList file saved to disk");
+                            cb.onVideoFileLoaded(fileToLoad, MTOwnCloudHelper.this);
+                        }
+                    }).start();
                 }
 
                 @Override
