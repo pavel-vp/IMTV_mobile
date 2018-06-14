@@ -149,7 +149,7 @@ public class Dao {
         // создадим директории
         videoPath = new File(baseFolder, "Video");
         videoPath.mkdir();
-        updateApkPath = new File(Environment.getExternalStorageDirectory(), "ImtvUpdateApk");
+        updateApkPath = new File(Environment.getExternalStorageDirectory(), "imtv");
         updateApkPath.mkdir();
 
         CustomExceptionHandler.log("DAO created");

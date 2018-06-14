@@ -39,18 +39,20 @@ public class StatUpload implements IMTCallbackEvent  {
     public void startUploadStat() {
         try {
             // Процесс фоновой загрузки статистики проигрывания на сервер
-            CustomExceptionHandler.log("try startUpload stat");
+            CustomExceptionHandler.log("stat file try startUpload stat");
             lastIDExported = null;
             // запишем данные статистики из лок.базы в файл
             List<MTStatRec> list = dao.getmStatisticDBHelper().getNotExportedStatList();
             if (list.size() > 0) {
                 lastIDExported = list.get(list.size() - 1).getIdx();
-                CustomExceptionHandler.log("start send");
+                CustomExceptionHandler.log("stat file start send");
                 // отошлем файл
                 helper.sendStat(list);
+            } else {
+                reLaunchUploadStat();
             }
         } catch (Exception e) {
-            CustomExceptionHandler.logException("ошибка при отправке статистики", e);
+            CustomExceptionHandler.logException("stat file ошибка при отправке статистики", e);
             reLaunchUploadStat();
         }
     }
@@ -100,13 +102,14 @@ public class StatUpload implements IMTCallbackEvent  {
 
     public void reLaunchUploadStat() {
         if (!dao.getTerminated()) {
-            CustomExceptionHandler.log("Relaunch upload stat");
+            CustomExceptionHandler.log("stat file Relaunch upload stat");
             dao.getExecutor().schedule(new Runnable() {
                 @Override
                 public void run() {
                     StatUpload.this.startUploadStat();
                 }
-            }, (dao.getSetupRec() == null || dao.getSetupRec().getStats_send_time() == null) ? 30 : dao.getSetupRec().getStats_send_time(), TimeUnit.MINUTES);
+            }, (dao.getSetupRec() == null || dao.getSetupRec().getStats_send_time() == null) ? 30 : 3 //dao.getSetupRec().getStats_send_time()
+                     , TimeUnit.MINUTES);
         }
     }
 
