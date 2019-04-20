@@ -1,9 +1,11 @@
 package com.mobile_me.imtv_player.service;
 
 import android.support.annotation.NonNull;
+import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.util.IMTLogger;
+import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 import java.util.*;
 
@@ -14,9 +16,31 @@ public class MTPlayListSearch {
 
     private MTPlayList playList;
 
+    public Set<Long> getGeoVideoToPlay() {
+        return geoVideoToPlay;
+    }
+
+    private Set<Long> geoVideoToPlay = new HashSet<>();
 
     public void setMTPlayList(MTPlayList playList){
         this.playList = playList;
+    }
+
+    public void checkAndMapGeoVideo(MTGpsPoint lastGpsCoordinate, IMTLogger logger) {
+        if (playList == null) return; // Еще пустой плейлист
+        boolean isAdded = false;
+        // Проверить плейлист на георолик в этой точке
+        for (MTPlayListRec plr : playList.getPlaylist()) {
+            if (MTPlayListRec.TYPE_GEO.equals(plr.getType())) {
+                if (MTGpsUtils.isPointInPolygon(lastGpsCoordinate, plr.getPolygonMarks())) {
+                    this.geoVideoToPlay.add(plr.getId());
+                    isAdded = true;
+                }
+            }
+        }
+        if (isAdded) {
+            logger.log("checkAndMapGeoVideo lastGpsCoordinate=" + lastGpsCoordinate + " added to set = " + this.geoVideoToPlay);
+        }
     }
 
     static class MTCommercialInfo {
@@ -137,20 +161,107 @@ public class MTPlayListSearch {
         return q;
     }
 
-    public MTPlayListRec getNextVideoFile(@NonNull List<MTPlayListRec> statList, int lastMinutes, IMTLogger logger) {
+    static class MTGeoInfo {
+        MTPlayListRec mtPlayListRec;
+        double planQty = 0;
+        double factQty = 0;
+        double priority = 0;
+
+        @Override
+        public String toString() {
+            return "MTGeoInfo{" +
+                    " planQty=" + planQty +
+                    ", factQty=" + factQty +
+                    ", priority=" + priority +
+                    ", mtPlayListRec=" + mtPlayListRec +
+                    '}';
+        }
+    }
+    // Метод возвращает очередь по приоритетам, в котором георолики которые нужно воспроизвести отсортированы
+    // значению (план-факт) воспроизведения за это число минут. С наибольшим приоритетом - вверху
+    private PriorityQueue<MTGeoInfo> getGeoPQ(int lastMinutes, List<MTPlayListRec> statList) {
+        PriorityQueue<MTGeoInfo> q = new PriorityQueue<>(100, new Comparator<MTGeoInfo>() {
+            @Override
+            public int compare(MTGeoInfo lhs, MTGeoInfo rhs) {
+                if (lhs.priority > rhs.priority) return -1;
+                if (lhs.priority < rhs.priority) return 1;
+                return 0;
+            }
+        });
+        // Пройдемся по всему набору ИД-шников геороликов, которые нужно воспроизвести
+        if (this.geoVideoToPlay != null && geoVideoToPlay.size() > 0) {
+            Map<Long, MTGeoInfo> geoMap = new HashMap<>();
+            for (Long geoId : this.geoVideoToPlay) {
+                // Найдем его в плейлисте
+                MTPlayListRec rc = playList.searchById(geoId);
+                if (rc != null &&
+                            rc.getState() == MTPlayListRec.STATE_UPTODATE &&
+                            MTPlayListRec.TYPE_GEO.equals(rc.getType()) &&
+                            rc.getId().equals(geoId)) {
+
+                    MTGeoInfo ci = new MTGeoInfo();
+                    ci.mtPlayListRec = rc;
+                    ci.planQty = rc.getMax_count();
+                    ci.priority = ci.planQty;
+                    geoMap.put(rc.getId(), ci);
+                }
+            }
+            // пройтись по факту за последние минуты и расчитаем приоритет
+            for (MTPlayListRec r : statList) {
+                MTPlayListRec rc = playList.searchById(r.getId());
+                if (rc != null &&
+                        geoMap.get(r.getId()) != null &&
+                        rc.getState() == MTPlayListRec.STATE_UPTODATE ) {
+                    MTGeoInfo ci = geoMap.get(r.getId());
+                    if (ci == null) {
+                        ci = new MTGeoInfo();
+                        ci.mtPlayListRec = rc;
+                        geoMap.put(r.getId(), ci);
+                    }
+                    ci.factQty = ci.factQty + 1;
+                    ci.priority = ci.planQty - ci.factQty;
+                }
+            }
+            // из мапы перенесем в очередь
+            q.addAll(geoMap.values());
+        }
+        return q;
+    }
+
+
+////////////////////////////////
+    public MTPlayListRec getNextVideoFile(@NonNull List<MTPlayListRec> statList, int lastMinutes, IMTLogger logger, MTGpsPoint lastGpsPoint) {
         logger.log("start calc next file");
         MTPlayListRec lastRec = null;
         if (statList != null && statList.size() > 0) {
             lastRec = statList.get(0);
         }
-        logger.log("lastRec="+lastRec);
+        logger.log("lastRec="+lastRec + ", lastGpsPoint="+lastGpsPoint);
 
-        // TODO: GPS
 
         // TODO: логировать данные о сохраненных проигрываниях (на основании чего считаем), и выбранного факта, чтобы потом на основании лога можно было понять почему проигралась эта запись
         logger.log("statList.size="+statList.size());
 
         try {
+            // GPS
+            if (lastGpsPoint != null && this.geoVideoToPlay != null && this.geoVideoToPlay.size() > 0) {
+                // получим очередь по приоритетам с воспроизведением георолика в этой точке
+                PriorityQueue<MTGeoInfo> q = getGeoPQ(lastMinutes, statList);
+                logger.log("geo queue="+q.size());
+                // пройдемся по очереди в поиске первого неотрицательного, не такого же как последний проигранный
+                MTGeoInfo resGeo = q.poll();
+                while (resGeo != null && resGeo.priority > 0) {
+                    // Удалим его из мапы в любом случае
+                    this.geoVideoToPlay.remove(resGeo.mtPlayListRec.getId());
+                    if ((lastRec == null || lastRec.getId().longValue() != resGeo.mtPlayListRec.getId().longValue())) {
+                        logger.log("resGeo=" + resGeo);
+                        // проигрываем его
+                        return resGeo.mtPlayListRec;
+                    }
+                    resGeo = q.poll();
+                }
+
+            }
             // КОММЕРЧЕСКОЕ
             // получим очередь по приоритетам с воспроизведением коммерческого.
             PriorityQueue<MTCommercialInfo> q = getCommercialPQ(lastMinutes, statList);

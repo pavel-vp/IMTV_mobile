@@ -13,8 +13,8 @@ android {
         applicationId "com.mobile_me.imtv_player"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 56
-        versionName "1.056"
+        versionCode 57
+        versionName "1.057"
     }
     signingConfigs {
         debug {

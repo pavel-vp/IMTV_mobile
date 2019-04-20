@@ -1,18 +1,25 @@
 package com.mobile_me.imtv_player.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
-import android.media.MediaPlayer;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.IntDef;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,15 +42,13 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.FileDataSource;
 import com.mobile_me.imtv_player.R;
 import com.mobile_me.imtv_player.dao.Dao;
+import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.service.MTLoaderManager;
 import com.mobile_me.imtv_player.service.MTPlayListManager;
 import com.mobile_me.imtv_player.service.StatUpload;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
-import com.mobile_me.imtv_player.util.RootUtils;
-import com.stericson.rootshell.RootShell;
-import com.stericson.roottools.RootTools;
 
 import java.io.File;
 import java.util.Calendar;
@@ -51,9 +56,11 @@ import java.util.Calendar;
 /**
  * Created by pasha on 10/12/16.
  */
-public class MainActivity2  extends Activity implements SensorEventListener, LocationListener {
+public class MainActivity2 extends Activity implements SensorEventListener, LocationListener {
 
-//    VideoView vw1;
+    private static final int REQUEST_CODE_LOCATION = 1;
+    private static final int MIN_TIME_INTERVAL_COORDINATE_MS = 1000;
+    //    VideoView vw1;
     VideoView vw2;
     MTLoaderManager loaderManager;
     Dao dao;
@@ -64,11 +71,11 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
     boolean isInPreparing2 = false;
     private boolean is2Players = false;
     private Handler handler = new Handler();
-    private volatile Location currentLocation = null;
 
     private SimpleExoPlayerView exoPlayerView;
     private SimpleExoPlayer exoPlayer;
-
+    private LocationManager locationManager;
+    private String provider;
     private volatile String fileToPlay = null;
 
     @Override
@@ -76,9 +83,10 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_2);
         Thread.setDefaultUncaughtExceptionHandler(CustomExceptionHandler.getLog());
-
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        provider = locationManager.getBestProvider(new Criteria(), false);
         lastStartPlayFile = Calendar.getInstance().getTimeInMillis();
-        SensorManager mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        SensorManager mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor TempSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
         mSensorManager.registerListener(this, TempSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
@@ -89,7 +97,7 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
         exoPlayerView.setControllerVisibilityListener(new PlaybackControlView.VisibilityListener() {
             @Override
             public void onVisibilityChange(int i) {
-                if(i == 0) {
+                if (i == 0) {
                     exoPlayerView.hideController();
                 }
             }
@@ -118,43 +126,24 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
             getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
             int height = displaymetrics.heightPixels;
             int width = height * 4 / 3;
-            ViewGroup.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height-1);
+            ViewGroup.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height - 1);
             //vw1.setLayoutParams(layoutParams);
             //holder.setFixedSize(width, height-1);
 
             vw2.setVisibility(View.VISIBLE);
-            layoutParams = new LinearLayout.LayoutParams(displaymetrics.widthPixels - width, height-1);
+            layoutParams = new LinearLayout.LayoutParams(displaymetrics.widthPixels - width, height - 1);
             vw2.setLayoutParams(layoutParams);
             //holder2.setFixedSize(displaymetrics.widthPixels - width, height-1);
         } else {
-        //    ViewGroup.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
-        //    vw1.setLayoutParams(layoutParams);
+            //    ViewGroup.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+            //    vw1.setLayoutParams(layoutParams);
 /*            layoutParams = new LinearLayout.LayoutParams(0, 0, 0);
             vw2.setLayoutParams(layoutParams);
             vw2.setVisibility(View.GONE);*/
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!dao.getTerminated()) {
-                    Calendar calNow = Calendar.getInstance();
-                    calNow.add(Calendar.SECOND, 0-Integer.parseInt(getString(R.string.good_location_interval_seconds)));
-                    Calendar calLoc = Calendar.getInstance();
-                    calLoc.setTime(calLoc.getTime());
-                    if (currentLocation != null && calNow.after(calLoc)) {
-                        currentLocation = null;
-                    }
-                    try {
-                        Thread.sleep(4000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
         StatUpload.getInstance(dao).startUploadStat();
-
+        checkLocationPermission();
     }
 
     Player.EventListener exoPlayerListener = new Player.EventListener() {
@@ -170,26 +159,26 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
 
         @Override
         public void onLoadingChanged(boolean isLoading) {
-            CustomExceptionHandler.log("onLoadingChanged "+isLoading);
+            CustomExceptionHandler.log("onLoadingChanged " + isLoading);
         }
 
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             String s = null;
-            switch (playbackState){
+            switch (playbackState) {
                 case Player.STATE_IDLE:
-                    s= "STATE_IDLE";
+                    s = "STATE_IDLE";
                     break;
                 case Player.STATE_BUFFERING:
-                    s="STATE_BUFFERING";
+                    s = "STATE_BUFFERING";
                     break;
                 case Player.STATE_READY:
-                    s="STATE_READY";
+                    s = "STATE_READY";
                     break;
                 case Player.STATE_ENDED:
-                    s="STATE_ENDED";
+                    s = "STATE_ENDED";
             }
-            CustomExceptionHandler.log("onPlayerStateChanged "+playWhenReady+","+s);
+            CustomExceptionHandler.log("onPlayerStateChanged " + playWhenReady + "," + s);
             if (playbackState == Player.STATE_ENDED) {
                 playNextVideoFile(true);
             }
@@ -218,7 +207,7 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
     };
 
     private void initializePlayer() {
-        if (exoPlayer==null) {
+        if (exoPlayer == null) {
             releasePlayer();
             exoPlayer = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector(), new DefaultLoadControl());
             exoPlayer.addListener(exoPlayerListener);
@@ -248,7 +237,7 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
 
         exoPlayer.prepare(audioSource);
         exoPlayer.setPlayWhenReady(true);
-     //   exoPlayer.seekTo(0);
+        //   exoPlayer.seekTo(0);
         // сразу следующий
         getNextVideoFileToPlay();
 
@@ -280,16 +269,102 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            locationManager.requestLocationUpdates(provider, MIN_TIME_INTERVAL_COORDINATE_MS, 0, this);
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         hideSystemUi();
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            locationManager.removeUpdates(this);
+        }
     }
 
+    public boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Внимание")
+                        .setMessage("Необходимо подтверить разрешение на использование координат")
+                        .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(MainActivity2.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                        REQUEST_CODE_LOCATION);
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_CODE_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                        //Request location updates:
+                        locationManager.requestLocationUpdates(provider, MIN_TIME_INTERVAL_COORDINATE_MS, 0, this);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+
+        }
+    }
     @Override
     protected void onStart() {
         CustomExceptionHandler.log("onStart");
         super.onStart();
         isActive = true;
+
+
         getNextVideoFileToPlay();
         new Thread(new Runnable() {
             @Override
@@ -416,7 +491,7 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
                     // запустить проигрывание этого файла
                     CustomExceptionHandler.log("playList start playing, type="+type+", filePathToPlay="+filePathToPlay);
                     setFileToPlay(filePathToPlay);
-                    dao.getmStatisticDBHelper().addStat(found, currentLocation);
+                    dao.getmStatisticDBHelper().addStat(found, dao.getLastGpsCoordinate());
                 }
                 if (forcedPlay) {
                     // запустить загрузку плейлиста TODO: не надо же уже?
@@ -451,7 +526,10 @@ public class MainActivity2  extends Activity implements SensorEventListener, Loc
 
     @Override
     public void onLocationChanged(Location location) {
-        this.currentLocation = location;
+        //MTGpsPoint point = new MTGpsPoint(56.858652, 53.221357);
+        MTGpsPoint point = new MTGpsPoint(location.getLatitude(), location.getLongitude());
+        Dao.getInstance(this).updateGpsCoord(point);
+        CustomExceptionHandler.log("currentLocation: "+location);
     }
 
     @Override

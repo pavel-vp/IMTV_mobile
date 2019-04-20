@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.mobile_me.imtv_player.BuildConfig;
 import com.mobile_me.imtv_player.R;
 import com.mobile_me.imtv_player.model.MTGlobalSetupRec;
+import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.service.LogUpload;
 import com.mobile_me.imtv_player.service.MTPlayListManager;
@@ -34,14 +35,13 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Dao {
 
-    public final static String DB_NAME = "imtv_player_db";
-    public final static int DB_VERSION = 3;
     public final static String PATH_KEY = "base_path_key";
     public final static String DEVICEID_KEY = "deviceid_key";
     public final static String LASTTIMESETTINGS_KEY = "lasttimesettings_key";
     public final static String MIN_COUNT_FREE = "min_count_free";
     public final static String COUNT_DAYS_BEFORE = "count_days_before";
     public final static String STAT_SENT_TIME = "stat_send_time";
+    private static final long GPS_COORD_ACTUAL_TIMEOUT = 10 * 1000;
 
 
     private static Dao instance;
@@ -64,6 +64,9 @@ public class Dao {
     private MTGlobalSetupRec setupRec = null;
 
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+    private MTGpsPoint lastGpsCoordinate;
+    private long lastGpsTime;
 
     public static Dao getInstance(Context ctx) {
         if (instance == null) {
@@ -102,7 +105,7 @@ public class Dao {
         } else {
 
         }
-//deviceId = "b8b58378e361";
+//deviceId = "b8b58378e361";  // actual
 //deviceId = "f8a62d97e8ca";
         CustomExceptionHandler.log("version:"+BuildConfig.VERSION_CODE);
         CustomExceptionHandler.log("deviceId:"+deviceId);
@@ -308,5 +311,19 @@ public class Dao {
         return updateApkPath.getAbsolutePath();
     }
 
+    public void updateGpsCoord(MTGpsPoint lastGpsCoordinate) {
+        this.lastGpsCoordinate = lastGpsCoordinate;
+        this.lastGpsTime = System.currentTimeMillis();
+        MTPlayListManager playListManager1 = getPlayListManagerByType(MTPlayList.TYPEPLAYLIST_1);
+        playListManager1.checkAndMapGeoVideo(this.lastGpsCoordinate);
+
+    }
+
+    public MTGpsPoint getLastGpsCoordinate() {
+        if ((System.currentTimeMillis() - lastGpsTime) > GPS_COORD_ACTUAL_TIMEOUT) {
+            return null;
+        }
+        return lastGpsCoordinate;
+    }
 
 }

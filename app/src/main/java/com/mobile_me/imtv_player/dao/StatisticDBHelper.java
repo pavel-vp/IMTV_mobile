@@ -9,6 +9,7 @@ import android.location.Location;
 
 import android.os.Environment;
 import com.mobile_me.imtv_player.R;
+import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.model.MTStatRec;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
@@ -22,7 +23,9 @@ import java.util.*;
  */
 public class StatisticDBHelper extends SQLiteOpenHelper {
 
-    public static final String TABLE_NAME = "playstatdata";
+    private final static String DB_NAME = "imtv_player_db_stat";
+    private final static int DB_VERSION = 7;
+    private static final String TABLE_NAME = "playstatdata";
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
 
     private static final String IDX = "idx";
@@ -51,7 +54,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     public static final String DROP_TABLE = "drop table "+ TABLE_NAME + ";";
 
     public StatisticDBHelper(Context context) {
-        super(context, Dao.DB_NAME, null, Dao.DB_VERSION);
+        super(context, DB_NAME, null, DB_VERSION);
         this.context = context;
     }
 
@@ -86,7 +89,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 //        for (int ver = oldVersion; ver<= newVersion; ver++) {
 //            if (ver == 2) {
-        CustomExceptionHandler.log("onUpgrade oldVer:"+oldVersion+", newVersion:"+newVersion);
+        CustomExceptionHandler.log("statDB onUpgrade oldVer:"+oldVersion+", newVersion:"+newVersion);
                 db.execSQL(StatisticDBHelper.DROP_TABLE);
                 db.execSQL(StatisticDBHelper.CREATE_TABLE);
 //            }
@@ -95,7 +98,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     }
 
     // Добавляем запись статистики
-    public void addStat(MTPlayListRec recExt, final Location loc) {
+    public void addStat(MTPlayListRec recExt, final MTGpsPoint loc) {
         final MTPlayListRec copy = recExt.getCopy();
 
         idx++;
@@ -112,7 +115,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
         CustomExceptionHandler.log("write stat rec end ");
     }
 
-    protected void writeStatRecInDBBackgroud(MTPlayListRec copy, Location loc) {
+    protected void writeStatRecInDBBackgroud(MTPlayListRec copy, MTGpsPoint loc) {
         synchronized (Dao.getInstance(context)) {
             try {
                 SQLiteDatabase db = this.getWritableDatabase();

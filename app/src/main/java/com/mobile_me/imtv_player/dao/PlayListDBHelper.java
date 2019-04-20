@@ -9,15 +9,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.mobile_me.imtv_player.model.MTDateRec;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
-import com.mobile_me.imtv_player.model.MTPointRec;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
+import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 /**
  * Created by pasha on 8/14/16.
  */
 public class PlayListDBHelper extends SQLiteOpenHelper {
 
-    public static final String TABLE_NAME = "playlist";
+    private final static String DB_NAME = "imtv_player_db_playlist";
+    private final static int DB_VERSION = 7;
+    private static final String TABLE_NAME = "playlist";
 
     private static final String ID = "id";
     private static final String FILENAME = "filename";
@@ -38,6 +40,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
     private static final String NUMORD = "numord";
     private static final String UPDATED = "updated";
     private static final String TYPEPLAYLIST = "typeplaylist";
+    private static final String POLYGONMARKS = "polygonmarks";
 
     Context context;
     public static final String CREATE_TABLE = "create table " + TABLE_NAME + " ( "
@@ -59,12 +62,11 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
             + PLAYED + " int, "
             + NUMORD + " int, "
             + UPDATED + " int, "
-            + TYPEPLAYLIST + " int "
+            + TYPEPLAYLIST + " int, "
+            + POLYGONMARKS + " text "
             + ");";
-
-
     public PlayListDBHelper(Context context) {
-        super(context, Dao.DB_NAME, null, Dao.DB_VERSION);
+        super(context, DB_NAME, null, DB_VERSION);
         this.context = context;
     }
 
@@ -84,7 +86,11 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        CustomExceptionHandler.log("playlistDB onUpgrade oldVer:"+oldVersion+", newVersion:"+newVersion);
+        if (newVersion == 5) {
+            db.execSQL("alter table "+TABLE_NAME+" add column "+POLYGONMARKS+" text;");
+        }
+        CustomExceptionHandler.log("onUpgrade done");
     }
 
     public MTPlayList readPlayList(int typePlayList) {
@@ -113,12 +119,13 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                     rec.setDate(new MTDateRec(cur.getString(cur.getColumnIndex(DTFROM)), cur.getString(cur.getColumnIndex(DTTO))));
                     rec.setMd5(cur.getString(cur.getColumnIndex(MD5)));
                     rec.setPeriodicity(cur.getLong(cur.getColumnIndex(PERIODICITY)));
-                    rec.setPoint(new MTPointRec(cur.getDouble(cur.getColumnIndex(POINTLAT)), cur.getDouble(cur.getColumnIndex(POINTLON))));
-                    rec.setRadius(cur.getDouble(cur.getColumnIndex(RADIUS)));
-                    rec.setMax_count(cur.getLong(cur.getColumnIndex(MAXCOUNT)));
-                    rec.setMin_count(cur.getLong(cur.getColumnIndex(MINCOUNT)));
                     rec.setState(cur.getInt(cur.getColumnIndex(STATE)));
                     rec.setPlayed(cur.getInt(cur.getColumnIndex(PLAYED)));
+                    String polygonS = cur.getString(cur.getColumnIndex(POLYGONMARKS));
+                    rec.setPolygonMarks(MTGpsUtils.parsePolygon(polygonS));
+                    rec.setMin_count((long) cur.getInt(cur.getColumnIndex(MINCOUNT)));
+                    rec.setMax_count((long) cur.getInt(cur.getColumnIndex(MAXCOUNT)));
+
                     list.getPlaylist().add(rec);
                 }  while (cur.moveToNext()) ;
             }
@@ -158,17 +165,15 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                     cv.put(DTTO, plr.getDate().getTo());
                     cv.put(MD5, plr.getMd5());
                     cv.put(PERIODICITY, plr.getPeriodicity());
-                    cv.put(POINTLAT, plr.getPoint().getX());
-                    cv.put(POINTLON, plr.getPoint().getY());
-                    cv.put(RADIUS, plr.getRadius());
-                    cv.put(MAXCOUNT, plr.getMax_count());
-                    cv.put(MINCOUNT, plr.getMin_count());
 
                     cv.put(STATE, plr.getState());
                     cv.put(PLAYED, plr.getPlayed());
                     cv.put(NUMORD, numord);
                     cv.put(UPDATED, 1);
                     cv.put(TYPEPLAYLIST, typePlayList);
+                    cv.put(POLYGONMARKS, MTGpsUtils.writePolygonAsString(plr.getPolygonMarks()));
+                    cv.put(MINCOUNT, plr.getMin_count());
+                    cv.put(MAXCOUNT, plr.getMax_count());
                     // если такой файл уже есть - перезаписать его
                     Cursor cur = db.rawQuery("select * from " + TABLE_NAME + " where " + ID + " = ? and " + TYPEPLAYLIST + " = ?", new String[]{String.valueOf(plr.getId()), String.valueOf(typePlayList)});
                     if (cur != null) {

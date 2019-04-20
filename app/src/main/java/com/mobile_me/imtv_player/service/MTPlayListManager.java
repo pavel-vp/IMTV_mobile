@@ -4,18 +4,15 @@ import android.content.Context;
 
 import com.mobile_me.imtv_player.R;
 import com.mobile_me.imtv_player.dao.Dao;
+import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 import com.mobile_me.imtv_player.util.IMTLogger;
+import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Created by pasha on 8/27/16.
@@ -124,14 +121,7 @@ public class MTPlayListManager implements IMTLogger {
         // на входе - статистика за последние 30 мин, текущий плейлист с актуальными файлами для проигрывания
         List<MTPlayListRec> statList = dao.getmStatisticDBHelper().readStatOnLastNMins(lastMinutes);
         this.playListSearch.setMTPlayList(this.playList);
-        return this.playListSearch.getNextVideoFile(statList, lastMinutes, this);
-    }
-
-    public void setFilePlayFlag(MTPlayListRec rec, int flag) {
-        synchronized (playList) {
-            rec.setPlayed(flag);
-            Dao.getInstance(ctx).getPlayListDBHelper().updatePlayList(this.playList);
-        }
+        return this.playListSearch.getNextVideoFile(statList, lastMinutes, this, dao.getLastGpsCoordinate());
     }
 
     public void setFileStateFlag(MTPlayListRec rec, int flag) {
@@ -246,5 +236,9 @@ public class MTPlayListManager implements IMTLogger {
     @Override
     public void log(String msg) {
         CustomExceptionHandler.log(msg);
+    }
+
+    public void checkAndMapGeoVideo(MTGpsPoint lastGpsCoordinate) {
+        playListSearch.checkAndMapGeoVideo(lastGpsCoordinate, this);
     }
 }

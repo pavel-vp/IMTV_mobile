@@ -1,8 +1,13 @@
 package com.mobile_me.imtv_player.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by pasha on 24.12.16.
@@ -34,19 +39,18 @@ public class MTPlayListRec implements Serializable {
 
     // Для коммерческого
     private Long periodicity = Long.valueOf(0); // Периодичность: раз в 10 мин
-
     // GPS таргетированные
-    private MTPointRec point = new MTPointRec(); // координаты точки
-    private Double radius = Double.valueOf(0); // Радиус (метры)
-    private Long max_count = Long.valueOf(0); // Макс. Кол. Воспроизведений за раз в геолокации
-    private Long min_count = Long.valueOf(0); // Мин. обязательное кол. Раз в геолокации
+    @SerializedName("PolygonMarks")
+    private MTGpsPoint[] polygonMarks;
+    private Long max_count;
+    private Long min_count;
 
     private transient int state = STATE_UNKNOWN;
     private transient int played = PLAYED_NO;
 
     public MTPlayListRec() {  }
 
-    public MTPlayListRec(Long idx, Long id, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTPointRec point, Double radius, Long max_count, Long min_count, int state, int played) {
+    public MTPlayListRec(Long idx, Long id, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTGpsPoint[] polygonMarks, int state, int played, Long max_count, Long min_count) {
         this.idx = idx;
         this.id = id;
         this.filename = filename;
@@ -56,12 +60,11 @@ public class MTPlayListRec implements Serializable {
         this.date = date;
         this.md5 = md5;
         this.periodicity = periodicity;
-        this.point = point;
-        this.radius = radius;
-        this.max_count = max_count;
-        this.min_count = min_count;
+        this.polygonMarks = polygonMarks;
         this.state = state;
         this.played = played;
+        this.max_count = max_count;
+        this.min_count = min_count;
     }
 
     public Long getIdx() {
@@ -120,38 +123,6 @@ public class MTPlayListRec implements Serializable {
         this.periodicity = periodicity;
     }
 
-    public MTPointRec getPoint() {
-        return point;
-    }
-
-    public void setPoint(MTPointRec point) {
-        this.point = point;
-    }
-
-    public Double getRadius() {
-        return radius;
-    }
-
-    public void setRadius(Double radius) {
-        this.radius = radius;
-    }
-
-    public Long getMax_count() {
-        return max_count;
-    }
-
-    public void setMax_count(Long max_count) {
-        this.max_count = max_count;
-    }
-
-    public Long getMin_count() {
-        return min_count;
-    }
-
-    public void setMin_count(Long min_count) {
-        this.min_count = min_count;
-    }
-
     public int getState() {
         return state;
     }
@@ -187,9 +158,35 @@ public class MTPlayListRec implements Serializable {
     }
 
     public MTPlayListRec getCopy() {
-        MTPlayListRec copy = new MTPlayListRec(idx, id, filename, duration, size, type, date, md5, periodicity, point, radius, max_count, min_count, STATE_UNKNOWN, PLAYED_NO);
+        MTPlayListRec copy = new MTPlayListRec(idx, id, filename, duration, size, type, date, md5, periodicity, polygonMarks, STATE_UNKNOWN, PLAYED_NO, max_count, min_count);
         return copy;
     }
+
+    public MTGpsPoint[] getPolygonMarks() {
+        return this.polygonMarks;
+    }
+
+    public void setPolygonMarks(MTGpsPoint[] polygonMarks) {
+        this.polygonMarks = polygonMarks;
+    }
+
+
+    public Long getMax_count() {
+        return max_count;
+    }
+
+    public void setMax_count(Long max_count) {
+        this.max_count = max_count;
+    }
+
+    public Long getMin_count() {
+        return min_count;
+    }
+
+    public void setMin_count(Long min_count) {
+        this.min_count = min_count;
+    }
+
 
     @Override
     public String toString() {
@@ -203,8 +200,7 @@ public class MTPlayListRec implements Serializable {
                 ", date=" + date +
                 ", md5='" + md5 + '\'' +
                 ", periodicity=" + periodicity +
-                ", point=" + point +
-                ", radius=" + radius +
+                ", polygonMarks=" + Arrays.toString(polygonMarks) +
                 ", max_count=" + max_count +
                 ", min_count=" + min_count +
                 ", state=" + state +
