@@ -128,7 +128,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
                 cv.put(DTDAYHOUR, Long.parseLong(sdf.format(cal.getTime())));
                 if (loc != null) {
                     cv.put(POINT_LAT, loc.getLatitude());
-                    cv.put(POINT_LON, loc.getLatitude());
+                    cv.put(POINT_LON, loc.getLongitude());
                 }
                 cv.put(TYPE, copy.getType());
                 db.insert(TABLE_NAME, null, cv);

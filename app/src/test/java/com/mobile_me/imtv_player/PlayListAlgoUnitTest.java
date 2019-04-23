@@ -124,6 +124,15 @@ public class PlayListAlgoUnitTest {
         return pointList;
     }
 
+    private MTGpsPoint[] getPolygon_4() { // ?
+        MTGpsPoint[] pointList = new MTGpsPoint[4];
+        pointList[0] = new MTGpsPoint(56.82921718103309, 53.148169306047);
+        pointList[1] = new MTGpsPoint(56.828230984975804, 53.14784744096539);
+        pointList[2] = new MTGpsPoint(56.82821924439014, 53.150529649980285);
+        pointList[3] = new MTGpsPoint(56.828935413380854, 53.15093734575055);
+        return pointList;
+    }
+
 
     @Test
     public void check_playlist_gps_1_point_away() throws Exception {
@@ -161,6 +170,13 @@ public class PlayListAlgoUnitTest {
         assertEquals(playList.getPlaylist().get(1), res);
     }
 
+    @Test
+    public void check_point_inside() throws Exception {
+        // init
+        boolean isInside = MTGpsUtils.isPointInPolygon(new MTGpsPoint(56.828025,53.137340), getPolygon_4());
+        // assert
+        assertEquals(isInside, false);
+    }
 
     @Test
     public void check_add_point_to_set() {
