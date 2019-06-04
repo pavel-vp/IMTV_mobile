@@ -1,16 +1,19 @@
 package com.mobile_me.imtv_player.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 
 /**
  * Created by pasha on 06.03.18.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MTStatRec implements Serializable {
     @JsonIgnore
     private Long idx;
     private Long id;
+    private Long vpid;
     private String dt;
     private double lat;
     private double lon;
@@ -53,5 +56,13 @@ public class MTStatRec implements Serializable {
 
     public void setIdx(Long idx) {
         this.idx = idx;
+    }
+
+    public Long getVpid() {
+        return vpid;
+    }
+
+    public void setVpid(Long vpid) {
+        this.vpid = vpid;
     }
 }

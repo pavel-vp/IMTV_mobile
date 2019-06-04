@@ -238,6 +238,19 @@ public class MTPlayListSearch {
         }
         logger.log("lastRec="+lastRec + ", lastGpsPoint="+lastGpsPoint);
 
+        // DEBUG MODE
+        logger.log("stat begin====== ");
+        for (MTPlayListRec statRec : statList) {
+            logger.log("stat rec: "+statRec);
+        }
+        logger.log("stat end====== ");
+        logger.log("playList begin====== ");
+        for (MTPlayListRec rec : playList.getPlaylist()) {
+            logger.log("playList rec: "+rec);
+        }
+        logger.log("playList end====== ");
+        // DEBUG MODE
+
 
         // TODO: логировать данные о сохраненных проигрываниях (на основании чего считаем), и выбранного факта, чтобы потом на основании лога можно было понять почему проигралась эта запись
         logger.log("statList.size="+statList.size());

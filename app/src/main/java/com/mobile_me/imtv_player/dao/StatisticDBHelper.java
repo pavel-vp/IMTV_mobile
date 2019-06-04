@@ -30,6 +30,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
 
     private static final String IDX = "idx";
     private static final String ID = "id";
+    private static final String VPID = "vpid";
     private static final String DT = "dt";
     private static final String DTDAYHOUR = "dtdayhour";
     private static final String DURATION = "duration";
@@ -42,6 +43,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     public static final String CREATE_TABLE = "create table " + TABLE_NAME + " ( "
             + IDX + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
             + ID + " integer, "
+            + VPID + " integer, "
             + DT + " long, "
             + DTDAYHOUR + " long, "
             + DURATION + " int, "
@@ -122,6 +124,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
 
                 ContentValues cv = new ContentValues();
                 cv.put(ID, copy.getId());
+                cv.put(VPID, copy.getVpid());
                 cv.put(DURATION, copy.getDuration());
                 Calendar cal = Calendar.getInstance();
                 cv.put(DT, cal.getTimeInMillis());
@@ -229,6 +232,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
                         MTStatRec rec = new MTStatRec();
                         rec.setIdx(cur.getLong(cur.getColumnIndex(IDX)));
                         rec.setId(cur.getLong(cur.getColumnIndex(ID)));
+                        rec.setVpid(cur.getLong(cur.getColumnIndex(VPID)));
                         rec.setDt(cur.getString(cur.getColumnIndex(DT)));
                         rec.setLat(cur.getDouble(cur.getColumnIndex(POINT_LAT)));
                         rec.setLon(cur.getDouble(cur.getColumnIndex(POINT_LON)));

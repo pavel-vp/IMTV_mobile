@@ -30,6 +30,7 @@ public class MTPlayListRec implements Serializable {
     // Общее
     private Long idx;
     private Long id;
+    private Long vpid;
     private String filename; // ИмяФайла
     private Long duration = Long.valueOf(0); // Время ролика: 23сек.
     private Long size = Long.valueOf(0); // размер в байтах
@@ -50,9 +51,10 @@ public class MTPlayListRec implements Serializable {
 
     public MTPlayListRec() {  }
 
-    public MTPlayListRec(Long idx, Long id, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTGpsPoint[] polygonMarks, int state, int played, Long max_count, Long min_count) {
+    public MTPlayListRec(Long idx, Long id, Long vpid, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTGpsPoint[] polygonMarks, int state, int played, Long max_count, Long min_count) {
         this.idx = idx;
         this.id = id;
+        this.vpid = vpid;
         this.filename = filename;
         this.duration = duration;
         this.size = size;
@@ -158,7 +160,7 @@ public class MTPlayListRec implements Serializable {
     }
 
     public MTPlayListRec getCopy() {
-        MTPlayListRec copy = new MTPlayListRec(idx, id, filename, duration, size, type, date, md5, periodicity, polygonMarks, STATE_UNKNOWN, PLAYED_NO, max_count, min_count);
+        MTPlayListRec copy = new MTPlayListRec(idx, id, vpid, filename, duration, size, type, date, md5, periodicity, polygonMarks, STATE_UNKNOWN, PLAYED_NO, max_count, min_count);
         return copy;
     }
 
@@ -187,12 +189,20 @@ public class MTPlayListRec implements Serializable {
         this.min_count = min_count;
     }
 
+    public Long getVpid() {
+        return vpid;
+    }
+
+    public void setVpid(Long vpid) {
+        this.vpid = vpid;
+    }
 
     @Override
     public String toString() {
         return "MTPlayListRec{" +
                 "idx=" + idx +
                 ", id=" + id +
+                ", vpid=" + vpid +
                 ", filename='" + filename + '\'' +
                 ", duration=" + duration +
                 ", size=" + size +

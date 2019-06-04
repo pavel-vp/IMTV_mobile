@@ -18,10 +18,11 @@ import com.mobile_me.imtv_player.util.MTGpsUtils;
 public class PlayListDBHelper extends SQLiteOpenHelper {
 
     private final static String DB_NAME = "imtv_player_db_playlist";
-    private final static int DB_VERSION = 7;
+    private final static int DB_VERSION = 8;
     private static final String TABLE_NAME = "playlist";
 
     private static final String ID = "id";
+    private static final String VPID = "vpid";
     private static final String FILENAME = "filename";
     private static final String SIZE = "size";
     private static final String DURATION = "duration";
@@ -45,6 +46,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
     Context context;
     public static final String CREATE_TABLE = "create table " + TABLE_NAME + " ( "
             + ID + " integer, "
+            + VPID + " integer, "
             + FILENAME + " text, "
             + SIZE + " int, "
             + DURATION + " int, "
@@ -90,6 +92,9 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
         if (newVersion == 5) {
             db.execSQL("alter table "+TABLE_NAME+" add column "+POLYGONMARKS+" text;");
         }
+        if (newVersion == 8) {
+            db.execSQL("alter table "+TABLE_NAME+" add column "+VPID+" int;");
+        }
         CustomExceptionHandler.log("onUpgrade done");
     }
 
@@ -112,6 +117,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                 do {
                     MTPlayListRec rec = new MTPlayListRec();
                     rec.setId(cur.getLong(cur.getColumnIndex(ID)));
+                    rec.setVpid(cur.getLong(cur.getColumnIndex(VPID)));
                     rec.setFilename(cur.getString(cur.getColumnIndex(FILENAME)));
                     rec.setSize(cur.getLong(cur.getColumnIndex(SIZE)));
                     rec.setDuration(cur.getLong(cur.getColumnIndex(DURATION)));
@@ -156,6 +162,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                 for (MTPlayListRec plr : playList.getPlaylist()) {
                     ContentValues cv = new ContentValues();
                     cv.put(ID, plr.getId());
+                    cv.put(VPID, plr.getVpid());
                     cv.put(FILENAME, plr.getFilename());
                     cv.put(SIZE, plr.getSize());
                     cv.put(DURATION, plr.getDuration());
