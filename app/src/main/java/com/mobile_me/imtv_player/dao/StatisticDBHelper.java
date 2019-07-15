@@ -100,11 +100,12 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     }
 
     // Добавляем запись статистики
-    public void addStat(MTPlayListRec recExt, final MTGpsPoint loc) {
+    public void addStat(MTPlayListRec recExt, final MTGpsPoint loc, Long timeMS) {
         final MTPlayListRec copy = recExt.getCopy();
 
         idx++;
         copy.setIdx(idx);
+        copy.setPlayedTime(timeMS);
         CustomExceptionHandler.log("write stat  recExt="+copy);
         queueStat.add(copy);
         new Thread(new Runnable() {

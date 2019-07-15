@@ -8,6 +8,7 @@ import com.mobile_me.imtv_player.util.IMTLogger;
 import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by pasha on 07.12.17.
@@ -197,7 +198,8 @@ public class MTPlayListSearch {
                 if (rc != null &&
                             rc.getState() == MTPlayListRec.STATE_UPTODATE &&
                             MTPlayListRec.TYPE_GEO.equals(rc.getType()) &&
-                            rc.getId().equals(geoId)) {
+                            rc.getId().equals(geoId)
+                             ) {
 
                     MTGeoInfo ci = new MTGeoInfo();
                     ci.mtPlayListRec = rc;
@@ -212,14 +214,15 @@ public class MTPlayListSearch {
                 if (rc != null &&
                         geoMap.get(r.getId()) != null &&
                         rc.getState() == MTPlayListRec.STATE_UPTODATE ) {
-                    MTGeoInfo ci = geoMap.get(r.getId());
-                    if (ci == null) {
-                        ci = new MTGeoInfo();
-                        ci.mtPlayListRec = rc;
-                        geoMap.put(r.getId(), ci);
+                    // Если время проигрывания - сейчас меньше чем таймаут записи (который не 0), то удалим запись из списка итогового
+                    if (rc.getMin_delay() != null && rc.getMin_delay() > 0 && r.getPlayedTime() != null && r.getPlayedTime() > 0 &&
+                            (System.currentTimeMillis() - r.getPlayedTime() ) < rc.getMin_delay() * 1000 * 60 ) {
+                        geoMap.remove(r.getId());
+                    } else {
+                        MTGeoInfo ci = geoMap.get(r.getId());
+                        ci.factQty = ci.factQty + 1;
+                        ci.priority = ci.planQty - ci.factQty;
                     }
-                    ci.factQty = ci.factQty + 1;
-                    ci.priority = ci.planQty - ci.factQty;
                 }
             }
             // из мапы перенесем в очередь

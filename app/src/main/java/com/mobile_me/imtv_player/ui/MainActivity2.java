@@ -491,7 +491,7 @@ public class MainActivity2 extends Activity implements SensorEventListener, Loca
                     // запустить проигрывание этого файла
                     CustomExceptionHandler.log("playList start playing, type="+type+", filePathToPlay="+filePathToPlay);
                     setFileToPlay(filePathToPlay);
-                    dao.getmStatisticDBHelper().addStat(found, dao.getLastGpsCoordinate());
+                    dao.getmStatisticDBHelper().addStat(found, dao.getLastGpsCoordinate(), System.currentTimeMillis());
                 }
                 if (forcedPlay) {
                     // запустить загрузку плейлиста TODO: не надо же уже?

@@ -44,21 +44,21 @@ public class PlayListAlgoUnitTest {
     //////////////////
     private MTPlayList getUploadedPlayList() {
         MTPlayList playList = new MTPlayList();
-        playList.getPlaylist().add(new MTPlayListRec(1L, 1L, 1L, "one", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(2L, 2L, 1L, "two", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(3L, 3L, 1L, "three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null,MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(1L, 1L, 1L, "one", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(2L, 2L, 1L, "two", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(3L, 3L, 1L, "three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null,MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
         return playList;
     }
 
     private List<MTPlayListRec> getStat1() {
         List<MTPlayListRec> stat = new ArrayList<>();
-        stat.add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(5L, 5L,  1L,"five", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(6L, 6L,  1L,"six", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
+        stat.add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(5L, 5L,  1L,"five", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(6L, 6L,  1L,"six", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
         return stat;
     }
 
@@ -154,18 +154,18 @@ public class PlayListAlgoUnitTest {
 
     private MTPlayList getUploadedPlayList_Geo() {
         MTPlayList playList = new MTPlayList();
-        playList.getPlaylist().add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 10L, getPolygon_2(), MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 5L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 10L, getPolygon_2(), MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 5L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null,MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        playList.getPlaylist().add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 10L, getPolygon_2(), MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 5L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 10L, getPolygon_2(), MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 5L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null,MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        playList.getPlaylist().add(new MTPlayListRec(4L, 4L,  1L,"four", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 10L, null, MTPlayListRec.STATE_UPTODATE, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
         return playList;
     }
 
     private List<MTPlayListRec> getStat2_Geo() {
         List<MTPlayListRec> stat = new ArrayList<>();
-        stat.add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
-        stat.add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L));
+        stat.add(new MTPlayListRec(3L, 3L,  1L,"three", 10L, 0L, MTPlayListRec.TYPE_COMMERCIAL, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(2L, 2L,  1L,"two", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
+        stat.add(new MTPlayListRec(1L, 1L,  1L,"one", 10L, 0L, MTPlayListRec.TYPE_GEO, null, null, 0L, null, MTPlayListRec.STATE_UNKNOWN, MTPlayListRec.PLAYED_NO, 0L, 0L, 0L));
         return stat;
     }
 
@@ -177,11 +177,14 @@ public class PlayListAlgoUnitTest {
         playList.getPlaylist().get(0).setMax_count((long) 3);
         playList.getPlaylist().get(1).setPolygonMarks(getPolygon_2());
         playList.getPlaylist().get(1).setMax_count((long) 30);
+        playList.getPlaylist().get(1).setMin_delay((long) 10);
 
         playListSearch.setMTPlayList(playList);
         playListSearch.checkAndMapGeoVideo(new MTGpsPoint(56.875298, 53.202012), logger);
 
         List<MTPlayListRec> stat = getStat2_Geo();
+        stat.get(1).setPlayedTime(System.currentTimeMillis()-1000 * 60 *20);
+        stat.get(2).setPlayedTime(System.currentTimeMillis()-1000 * 60 *20);
         // do
         MTPlayListRec res = playListSearch.getNextVideoFile(stat, 30, logger, new MTGpsPoint(56.875298, 53.202012));
         // assert

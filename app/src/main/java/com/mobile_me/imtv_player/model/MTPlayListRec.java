@@ -45,13 +45,15 @@ public class MTPlayListRec implements Serializable {
     private MTGpsPoint[] polygonMarks;
     private Long max_count;
     private Long min_count;
+    private Long min_delay; // минимальное время между воспроизведениями этого ролика в минутах
 
     private transient int state = STATE_UNKNOWN;
     private transient int played = PLAYED_NO;
+    private transient Long playedTime = 0L;
 
     public MTPlayListRec() {  }
 
-    public MTPlayListRec(Long idx, Long id, Long vpid, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTGpsPoint[] polygonMarks, int state, int played, Long max_count, Long min_count) {
+    public MTPlayListRec(Long idx, Long id, Long vpid, String filename, Long duration, Long size, String type, MTDateRec date, String md5, Long periodicity, MTGpsPoint[] polygonMarks, int state, int played, Long max_count, Long min_count, Long min_delay) {
         this.idx = idx;
         this.id = id;
         this.vpid = vpid;
@@ -67,6 +69,7 @@ public class MTPlayListRec implements Serializable {
         this.played = played;
         this.max_count = max_count;
         this.min_count = min_count;
+        this.min_delay = min_delay;
     }
 
     public Long getIdx() {
@@ -160,7 +163,7 @@ public class MTPlayListRec implements Serializable {
     }
 
     public MTPlayListRec getCopy() {
-        MTPlayListRec copy = new MTPlayListRec(idx, id, vpid, filename, duration, size, type, date, md5, periodicity, polygonMarks, STATE_UNKNOWN, PLAYED_NO, max_count, min_count);
+        MTPlayListRec copy = new MTPlayListRec(idx, id, vpid, filename, duration, size, type, date, md5, periodicity, polygonMarks, STATE_UNKNOWN, PLAYED_NO, max_count, min_count, min_delay);
         return copy;
     }
 
@@ -197,6 +200,24 @@ public class MTPlayListRec implements Serializable {
         this.vpid = vpid;
     }
 
+
+    public Long getMin_delay() {
+        return min_delay;
+    }
+
+    public void setMin_delay(Long min_delay) {
+        this.min_delay = min_delay;
+    }
+
+
+    public Long getPlayedTime() {
+        return playedTime;
+    }
+
+    public void setPlayedTime(Long playedTime) {
+        this.playedTime = playedTime;
+    }
+
     @Override
     public String toString() {
         return "MTPlayListRec{" +
@@ -213,8 +234,10 @@ public class MTPlayListRec implements Serializable {
                 ", polygonMarks=" + Arrays.toString(polygonMarks) +
                 ", max_count=" + max_count +
                 ", min_count=" + min_count +
+                ", min_delay=" + min_delay +
                 ", state=" + state +
                 ", played=" + played +
+                ", playedTime=" + playedTime +
                 '}';
     }
 }

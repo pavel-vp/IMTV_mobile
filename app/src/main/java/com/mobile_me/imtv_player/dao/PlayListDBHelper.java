@@ -18,7 +18,7 @@ import com.mobile_me.imtv_player.util.MTGpsUtils;
 public class PlayListDBHelper extends SQLiteOpenHelper {
 
     private final static String DB_NAME = "imtv_player_db_playlist";
-    private final static int DB_VERSION = 8;
+    private final static int DB_VERSION = 9;
     private static final String TABLE_NAME = "playlist";
 
     private static final String ID = "id";
@@ -42,6 +42,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
     private static final String UPDATED = "updated";
     private static final String TYPEPLAYLIST = "typeplaylist";
     private static final String POLYGONMARKS = "polygonmarks";
+    private static final String MIN_DELAY = "min_delay";
 
     Context context;
     public static final String CREATE_TABLE = "create table " + TABLE_NAME + " ( "
@@ -65,7 +66,8 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
             + NUMORD + " int, "
             + UPDATED + " int, "
             + TYPEPLAYLIST + " int, "
-            + POLYGONMARKS + " text "
+            + POLYGONMARKS + " text, "
+            + MIN_DELAY + " int "
             + ");";
     public PlayListDBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -94,6 +96,9 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
         }
         if (newVersion == 8) {
             db.execSQL("alter table "+TABLE_NAME+" add column "+VPID+" int;");
+        }
+        if (newVersion == 9) {
+            db.execSQL("alter table "+TABLE_NAME+" add column "+MIN_DELAY+" int;");
         }
         CustomExceptionHandler.log("onUpgrade done");
     }
@@ -131,6 +136,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                     rec.setPolygonMarks(MTGpsUtils.parsePolygon(polygonS));
                     rec.setMin_count((long) cur.getInt(cur.getColumnIndex(MINCOUNT)));
                     rec.setMax_count((long) cur.getInt(cur.getColumnIndex(MAXCOUNT)));
+                    rec.setMin_delay((long) cur.getInt(cur.getColumnIndex(MIN_DELAY)));
 
                     list.getPlaylist().add(rec);
                 }  while (cur.moveToNext()) ;
@@ -181,6 +187,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
                     cv.put(POLYGONMARKS, MTGpsUtils.writePolygonAsString(plr.getPolygonMarks()));
                     cv.put(MINCOUNT, plr.getMin_count());
                     cv.put(MAXCOUNT, plr.getMax_count());
+                    cv.put(MIN_DELAY, plr.getMin_delay());
                     // если такой файл уже есть - перезаписать его
                     Cursor cur = db.rawQuery("select * from " + TABLE_NAME + " where " + ID + " = ? and " + TYPEPLAYLIST + " = ?", new String[]{String.valueOf(plr.getId()), String.valueOf(typePlayList)});
                     if (cur != null) {
