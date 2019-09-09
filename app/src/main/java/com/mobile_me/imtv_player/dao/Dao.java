@@ -20,6 +20,7 @@ import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.service.LogUpload;
 import com.mobile_me.imtv_player.service.MTPlayListManager;
 import com.mobile_me.imtv_player.service.SettingsLoader;
+import com.mobile_me.imtv_player.service.tasks.WifiCheckTask;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 import com.mobile_me.imtv_player.util.RootUtils;
 
@@ -67,6 +68,7 @@ public class Dao {
 
     private MTGpsPoint lastGpsCoordinate;
     private long lastGpsTime;
+    private WifiCheckTask wifiCheckTask;
 
     public static Dao getInstance(Context ctx) {
         if (instance == null) {
@@ -98,14 +100,19 @@ public class Dao {
 /*        TelephonyManager telephonyManager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
         deviceId = telephonyManager.getDeviceId();
         */
-        WifiManager manager = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
-        if (manager.isWifiEnabled()) {
-            WifiInfo info = manager.getConnectionInfo();
-            deviceId = info.getMacAddress().replace(":", "");
-        } else {
-
+        WifiManager manager = (WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        while (!manager.isWifiEnabled()) {
+            manager.setWifiEnabled(true);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-//deviceId = "b8b58378e361";  // actual
+        WifiInfo info = manager.getConnectionInfo();
+        deviceId = info.getMacAddress().replace(":", "");
+
+deviceId = "b8b58378e361";  // actual
 //deviceId = "f8a62d97e8ca";
         CustomExceptionHandler.log("version:"+BuildConfig.VERSION_CODE);
         CustomExceptionHandler.log("deviceId:"+deviceId);
@@ -155,6 +162,7 @@ public class Dao {
         updateApkPath = new File(Environment.getExternalStorageDirectory(), "imtv");
         updateApkPath.mkdir();
 
+        wifiCheckTask = new WifiCheckTask(this);
         CustomExceptionHandler.log("DAO created");
         CustomExceptionHandler.log("baseFolder="+baseFolder.getAbsolutePath());
         CustomExceptionHandler.log("videoPath="+getVideoPath());

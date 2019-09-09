@@ -24,6 +24,8 @@
     <string name="hang_interval_minutes">11</string>
     <!-- интервал для определения корректности координат (секунд) шаг 4 сек  -->
     <string name="good_location_interval_seconds">20</string>
+    <!-- интервал проверки wifi (минут) -->
+    <string name="checkwifi_interval_minutes">1</string>
 
 
 </resources>
