@@ -38,6 +38,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
     private static final String POINT_LON = "point_lon";
     private static final String TYPE = "typelist";
     private static final String EXPORTED = "exported";
+    private static final String GPIO14 = "gpio14";
 
     Context context;
     public static final String CREATE_TABLE = "create table " + TABLE_NAME + " ( "
@@ -50,7 +51,8 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
             + POINT_LAT + " double, "
             + POINT_LON + " double, "
             + TYPE + " text, "
-            + EXPORTED + " int"
+            + EXPORTED + " int,"
+            + GPIO14 + " text "
             + ");";
 
     public static final String DROP_TABLE = "drop table "+ TABLE_NAME + ";";
@@ -135,6 +137,7 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
                     cv.put(POINT_LON, loc.getLongitude());
                 }
                 cv.put(TYPE, copy.getType());
+                cv.put(GPIO14, Dao.getInstance(context).getGpioCheckTask().getLastGpio14Data());
                 db.insert(TABLE_NAME, null, cv);
             } catch (Exception e) {
                 CustomExceptionHandler.logException("write stat rec error ", e);

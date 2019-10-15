@@ -62,6 +62,16 @@ public class MTRestHelper {
         return callRes.execute().body();
     }
 
+    private void getPlayListFixed(Callback<MTPlayListRec[]> cb, String deviceid) {
+        Call<MTPlayListRec[]> callRes = service.getPlayListFixed(deviceid);
+        callRes.enqueue(cb);
+    }
+
+    public MTPlayListRec[] getPlayListFixedSync(String deviceid) throws IOException {
+        Call<MTPlayListRec[]> callRes = service.getPlayListFixed(deviceid);
+        return callRes.execute().body();
+    }
+
     public MTGlobalSetupRec getGlobalSetupRecSync(String deviceid) throws IOException {
         Call<MTGlobalSetupRec> callRes = service.getGlobalSetup(deviceid);
         return callRes.execute().body();
@@ -100,6 +110,35 @@ public class MTRestHelper {
             @Override
             public void run() {
                 getPlayList(new Callback<MTPlayListRec[]>() {
+                    @Override
+                    public void onResponse(Call<MTPlayListRec[]> call, Response<MTPlayListRec[]> response) {
+                        Log.v("MT", "sent ok response=" + response.body());
+                        if (response.body() != null) {
+                            MTPlayList playlist = new MTPlayList();
+                            playlist.getPlaylist().clear();
+                            List<MTPlayListRec> list = Arrays.asList(response.body());
+                            playlist.getPlaylist().addAll(list);
+                            cb.onPlaylistLoaded(playlist);
+                        } else {
+                            cb.onError(new Exception("error in  restaip - null playlist"));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<MTPlayListRec[]> call, Throwable t) {
+                        cb.onError(t);
+                    }
+                }, deviceid);
+            }
+        }).start();
+
+    }
+
+    public void getPlaylistFixed(final String deviceid, final IMTRestCallbackPlaylist cb) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getPlayListFixed(new Callback<MTPlayListRec[]>() {
                     @Override
                     public void onResponse(Call<MTPlayListRec[]> call, Response<MTPlayListRec[]> response) {
                         Log.v("MT", "sent ok response=" + response.body());

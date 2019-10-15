@@ -20,6 +20,7 @@ import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.service.LogUpload;
 import com.mobile_me.imtv_player.service.MTPlayListManager;
 import com.mobile_me.imtv_player.service.SettingsLoader;
+import com.mobile_me.imtv_player.service.tasks.GpioCheckTask;
 import com.mobile_me.imtv_player.service.tasks.WifiCheckTask;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 import com.mobile_me.imtv_player.util.RootUtils;
@@ -50,6 +51,7 @@ public class Dao {
     private Context ctx;
 
     private PlayListDBHelper mPlayListDBHelper;
+    private PlayListFixedDBHelper mPlayListFixedDBHelper;
     private StatisticDBHelper mStatisticDBHelper;
     private SharedPreferences mSharedPreferences;
 
@@ -69,6 +71,7 @@ public class Dao {
     private MTGpsPoint lastGpsCoordinate;
     private long lastGpsTime;
     private WifiCheckTask wifiCheckTask;
+    private GpioCheckTask gpioCheckTask;
 
     public static Dao getInstance(Context ctx) {
         if (instance == null) {
@@ -80,6 +83,7 @@ public class Dao {
     public Dao(Context ctx) {
         this.ctx = ctx;
         this.mPlayListDBHelper = new PlayListDBHelper(this.ctx);
+        this.mPlayListFixedDBHelper = new PlayListFixedDBHelper(this.ctx);
         this.mStatisticDBHelper = new StatisticDBHelper(this.ctx);
         this.mSharedPreferences = ctx.getSharedPreferences("settings", Activity.MODE_PRIVATE);
         MTGlobalSetupRec r = new MTGlobalSetupRec();
@@ -163,6 +167,7 @@ deviceId = "b8b58378e361";  // actual
         updateApkPath.mkdir();
 
         wifiCheckTask = new WifiCheckTask(this);
+        gpioCheckTask = new GpioCheckTask(this);
         CustomExceptionHandler.log("DAO created");
         CustomExceptionHandler.log("baseFolder="+baseFolder.getAbsolutePath());
         CustomExceptionHandler.log("videoPath="+getVideoPath());
@@ -333,5 +338,15 @@ deviceId = "b8b58378e361";  // actual
         }
         return lastGpsCoordinate;
     }
+
+    public GpioCheckTask getGpioCheckTask() {
+        return gpioCheckTask;
+    }
+
+
+    public PlayListFixedDBHelper getPlayListFixedDBHelper() {
+        return mPlayListFixedDBHelper;
+    }
+
 
 }

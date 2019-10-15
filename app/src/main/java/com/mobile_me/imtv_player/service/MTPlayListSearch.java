@@ -8,7 +8,7 @@ import com.mobile_me.imtv_player.util.IMTLogger;
 import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by pasha on 07.12.17.
@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MTPlayListSearch {
 
     private MTPlayList playList;
+    private MTPlayList playListFixed;
 
     public Set<Long> getGeoVideoToPlay() {
         return geoVideoToPlay;
@@ -42,6 +43,10 @@ public class MTPlayListSearch {
         if (isAdded) {
             logger.log("checkAndMapGeoVideo lastGpsCoordinate=" + lastGpsCoordinate + " added to set = " + this.geoVideoToPlay);
         }
+    }
+
+    public void setMTPlayListFixed(MTPlayList playListFixed) {
+        this.playListFixed = playListFixed;
     }
 
     static class MTCommercialInfo {
@@ -233,6 +238,38 @@ public class MTPlayListSearch {
 
 
 ////////////////////////////////
+    public MTPlayListRec getNextVideoFileFixed(IMTLogger logger, MTGpsPoint lastGpsCoordinate, AtomicInteger position) {
+        logger.log("start calc next file FIXED");
+        while (this.playListFixed == null) {
+            Thread.yield();
+        }
+
+        // TODO: добавить gps
+
+        MTPlayListRec lastRec = null;
+        while (lastRec == null) {
+
+            position.incrementAndGet();
+            if (position.get() >= this.playListFixed.getPlaylist().size()) {
+                position.set(0);
+            }
+
+            lastRec = this.playListFixed.getPlaylist().get(position.get());
+            logger.log("try FIXED file "+lastRec);
+            MTPlayListRec foundInPlayList = this.playList.searchById(lastRec.getId());
+            if (foundInPlayList == null || foundInPlayList.getState() != MTPlayListRec.STATE_UPTODATE ) {
+                lastRec = null;
+            }
+        }
+
+        logger.log("found FIXED file "+lastRec);
+
+        return lastRec;
+
+    }
+
+
+
     public MTPlayListRec getNextVideoFile(@NonNull List<MTPlayListRec> statList, int lastMinutes, IMTLogger logger, MTGpsPoint lastGpsPoint) {
         logger.log("start calc next file");
         MTPlayListRec lastRec = null;

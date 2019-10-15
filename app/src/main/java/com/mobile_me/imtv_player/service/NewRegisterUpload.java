@@ -51,6 +51,11 @@ public class NewRegisterUpload implements IMTCallbackEvent {
     }
 
     @Override
+    public void onPlayListFixedLoaded(MTPlayList playList, MTOwnCloudHelper ownCloudHelper) {
+
+    }
+
+    @Override
     public void onVideoFileLoaded(MTPlayListRec file, MTOwnCloudHelper ownCloudHelper) {
 
     }

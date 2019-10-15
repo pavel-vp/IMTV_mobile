@@ -2,17 +2,16 @@ package com.mobile_me.imtv_player.service;
 
 import android.content.Context;
 
-import com.mobile_me.imtv_player.R;
 import com.mobile_me.imtv_player.dao.Dao;
 import com.mobile_me.imtv_player.model.MTGpsPoint;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 import com.mobile_me.imtv_player.util.IMTLogger;
-import com.mobile_me.imtv_player.util.MTGpsUtils;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by pasha on 8/27/16.
@@ -20,9 +19,11 @@ import java.util.*;
 public class MTPlayListManager implements IMTLogger {
 
     private final MTPlayList playList = new MTPlayList();
+    private final MTPlayList playListFixed = new MTPlayList();
     private Context ctx;
     private Dao dao;
     private MTPlayListSearch playListSearch = new MTPlayListSearch();
+    private AtomicInteger position = new AtomicInteger(-1);
 
     public MTPlayListManager(Context ctx, int typePlayList) {
         this.ctx = ctx;
@@ -88,6 +89,7 @@ public class MTPlayListManager implements IMTLogger {
         return found;
     }
 
+
 /*    static class MTStatInfo {
         int durationFreeSec = 0; // число секунд воспроиведения НЕКОММ видео
         Map<Long, Integer> cntMap = new HashMap<>();
@@ -117,6 +119,13 @@ public class MTPlayListManager implements IMTLogger {
      * @return
      */
     private MTPlayListRec getNextVideoFileForPlayInternal() {
+        int lastMinutes = 30;
+        this.playListSearch.setMTPlayList(this.playList);
+        this.playListSearch.setMTPlayListFixed(this.playListFixed);
+        return this.playListSearch.getNextVideoFileFixed(this, dao.getLastGpsCoordinate(), position);
+    }
+
+    private MTPlayListRec getNextVideoFileForPlayInternal_OLD() {
         int lastMinutes = 30; // FIXME: в настройки
         // на входе - статистика за последние 30 мин, текущий плейлист с актуальными файлами для проигрывания
         List<MTPlayListRec> statList = dao.getmStatisticDBHelper().readStatOnLastNMins(lastMinutes);
@@ -178,11 +187,23 @@ public class MTPlayListManager implements IMTLogger {
         }
     }
 
+    public void savePlayListFixed(MTPlayList playListFixedNew) {
+        synchronized (playList) {
+            CustomExceptionHandler.log("savePlayListFixed playListFixed=" + playListFixed + " with new =" + playListFixedNew);
+            if (playListFixedNew == null)
+                return;
+            this.playListFixed.getPlaylist().clear();
+            this.playListFixed.getPlaylist().addAll(playListFixedNew.getPlaylist());
+            dao.getPlayListFixedDBHelper().savePlayListFixed(playListFixedNew);
+        }
+    }
+
+
     public MTPlayListRec getNextFileToLoad() {
         CustomExceptionHandler.log("getNextFileToLoad start");
         MTPlayListRec fileToLoad = null;
         synchronized (playList) {
-                List<MTPlayListRec> filesToLoad  = new ArrayList<>();
+                Map<Long, MTPlayListRec> filesToLoad  = new HashMap<>();
                 // по списку файлов пройтись и сравнить их с текущими. Если различаюься - поставить флаг необходимости скачивания
                 for (MTPlayListRec f : playList.getPlaylist()) {
                     // прочитать локальные данные файла
@@ -193,20 +214,23 @@ public class MTPlayListManager implements IMTLogger {
                        // log("loadVideoFileFromPlayList file state uptodate");
                     } else {
                         f.setState(MTPlayListRec.STATE_NEED_LOAD);
-                        filesToLoad.add(f);
+                        filesToLoad.put(f.getId(),f);
                         //log("loadVideoFileFromPlayList file state need load");
                     }
                 }
-                // Получим массив для загрузки. Из него случайным образом выберем файл для загрузки
+                // Получим массив для загрузки. Из него выберем файл для загрузки
                 CustomExceptionHandler.log("getNextFileToLoad filesToLoad="+filesToLoad);
                 if (filesToLoad.size() > 0) {
-                    int idx = (int)(Math.random() * filesToLoad.size());
-                    CustomExceptionHandler.log("getNextFileToLoad idx="+idx);
-                    if (idx <0) { idx = 0; }
-                    // запустить реальное скачивание первого файла
-                    fileToLoad = filesToLoad.get(idx);
-                    fileToLoad.setState(MTPlayListRec.STATE_LOADING);
-                    CustomExceptionHandler.log("getNextFileToLoad fileToLoad="+fileToLoad.getFilename());
+                    for (MTPlayListRec rec : playListFixed.getPlaylist()) {
+                        if (filesToLoad.containsKey(rec.getId())) {
+                            fileToLoad = filesToLoad.get(rec.getId());
+                            break;
+                        }
+                    }
+                    if (fileToLoad != null) {
+                        // запустить реальное скачивание первого файла
+                        fileToLoad.setState(MTPlayListRec.STATE_LOADING);
+                    }
                 }
         }
         CustomExceptionHandler.log("getNextFileToLoad file="+fileToLoad);
@@ -241,4 +265,10 @@ public class MTPlayListManager implements IMTLogger {
     public void checkAndMapGeoVideo(MTGpsPoint lastGpsCoordinate) {
         playListSearch.checkAndMapGeoVideo(lastGpsCoordinate, this);
     }
+
+    public MTPlayList getPlayListFixed() {
+        return playListFixed;
+    }
+
+
 }

@@ -151,11 +151,15 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
             CustomExceptionHandler.log("onBackgroundTaskComplete, r="+ r + ", task="+task);
             if (r) {
                 Dao.getInstance(this).getPlayListManagerByType(type).mergeAndSavePlayList(((CheckPlayListLocalTask) task).playList);
+                Dao.getInstance(this).getPlayListManagerByType(type).savePlayListFixed(((CheckPlayListLocalTask) task).playListFixed);
+
                 loadedCompleted.set(type-1, true);
                 tryStartMainActivity();
             } else {
                 // нет локального плейлиста - запускаем задачу первоначальной загрузки в текущем активити (пусть будет логотип)
+                //helpers.get(type - 1).loadPlayListFromServer();
                 helpers.get(type - 1).loadPlayListFromServer();
+                helpers.get(type - 1).loadPlayListFixedFromServer();
             }
         }
         if (task instanceof CheckForSettingsLocalTask) {
@@ -165,23 +169,52 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
 
     @Override
     public void onPlayListLoaded(MTPlayList playListNew, MTOwnCloudHelper ownCloudHelper) {
-        // плейлист загружен, запускаем загрузку первого файла
-        int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
-        CustomExceptionHandler.log("onPlayListLoaded success. playListNew.size="+playListNew.getPlaylist().size()+", typePlayList="+typePlayList);
-        //Toast.makeText(this, "Плейлист загружен", Toast.LENGTH_SHORT).show();
-        // запустить загрузку файлов из плейлиста
-        playListNew.setTypePlayList(typePlayList);
-        Dao.getInstance(this).getPlayListManagerByType(typePlayList).mergeAndSavePlayList(playListNew);
-        MTPlayListRec fileToLoad = Dao.getInstance(this).getPlayListManagerByType(typePlayList).getNextFileToLoad();
-        CustomExceptionHandler.log("fileToLoad="+fileToLoad);
-        if (fileToLoad != null) {
-            ownCloudHelper.loadVideoFileFromPlayList(fileToLoad);
-        } else {
-             // если все файлы актуальные вызываем активити
-            loadedCompleted.set(typePlayList-1, true);
-            tryStartMainActivity();
+        synchronized (this) {
+            // плейлист загружен, запускаем загрузку первого файла
+            int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
+            CustomExceptionHandler.log("onPlayListLoaded success. playListNew.size=" + playListNew.getPlaylist().size() + ", typePlayList=" + typePlayList);
+            //Toast.makeText(this, "Плейлист загружен", Toast.LENGTH_SHORT).show();
+            // запустить загрузку файлов из плейлиста
+            playListNew.setTypePlayList(typePlayList);
+            Dao.getInstance(this).getPlayListManagerByType(typePlayList).mergeAndSavePlayList(playListNew);
         }
+        tryStart(ownCloudHelper);
     }
+
+    @Override
+    public void onPlayListFixedLoaded(MTPlayList playListFixedNew, MTOwnCloudHelper ownCloudHelper) {
+        synchronized (this) {
+            // плейлист загружен, запускаем загрузку первого файла
+            int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
+            CustomExceptionHandler.log("onPlayListFixedLoaded success. playListFixedNew.size=" + playListFixedNew.getPlaylist().size() + ", typePlayList=" + typePlayList);
+            //Toast.makeText(this, "Плейлист загружен", Toast.LENGTH_SHORT).show();
+            // запустить загрузку файлов из плейлиста
+            playListFixedNew.setTypePlayList(typePlayList);
+            Dao.getInstance(this).getPlayListManagerByType(typePlayList).savePlayListFixed(playListFixedNew);
+        }
+        tryStart(ownCloudHelper);
+    }
+
+    private void tryStart(MTOwnCloudHelper ownCloudHelper) {
+        int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
+
+        // пытаемся стартовать, когда загружены оба плейлиста
+        if (Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayList() != null && Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayList().getPlaylist().size() > 0 &&
+            Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed() != null && Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed().getPlaylist().size() > 0 ) {
+
+            MTPlayListRec fileToLoad = Dao.getInstance(this).getPlayListManagerByType(typePlayList).getNextFileToLoad();
+            CustomExceptionHandler.log("fileToLoad=" + fileToLoad);
+            if (fileToLoad != null) {
+                ownCloudHelper.loadVideoFileFromPlayList(fileToLoad);
+            } else {
+                // если все файлы актуальные вызываем активити
+                loadedCompleted.set(typePlayList - 1, true);
+                tryStartMainActivity();
+            }
+        }
+
+    }
+
 
     @Override
     public void onVideoFileLoaded(MTPlayListRec file, MTOwnCloudHelper helper) {
@@ -199,6 +232,8 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
 
     @Override
     public void onError(int mode, MTOwnCloudHelper helper, Throwable t) {
+        CustomExceptionHandler.logException("error", t);
+
         final int typePlayList = getPLayListTypeByOwnHandler(helper);
         // запустить заново загрузку
         Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {

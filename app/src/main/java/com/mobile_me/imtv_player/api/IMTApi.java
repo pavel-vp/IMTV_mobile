@@ -48,4 +48,8 @@ public interface IMTApi {
     @GET("apk/getAPK.php")
     Call<ResponseBody> getApk();
 
+    // Новое апи - готовый плейлист для проигрывания
+    @GET("playlist/getPlaylist.php")
+    Call<MTPlayListRec[]> getPlayListFixed(@Query("code") String code);
+
 }

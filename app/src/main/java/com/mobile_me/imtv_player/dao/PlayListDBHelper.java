@@ -69,6 +69,7 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
             + POLYGONMARKS + " text, "
             + MIN_DELAY + " int "
             + ");";
+
     public PlayListDBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         this.context = context;
@@ -208,4 +209,5 @@ public class PlayListDBHelper extends SQLiteOpenHelper {
             CustomExceptionHandler.log("write playList end " + playList.getPlaylist().size());
         }
     }
+
 }

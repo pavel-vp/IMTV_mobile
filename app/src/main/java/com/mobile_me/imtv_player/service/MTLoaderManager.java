@@ -8,11 +8,9 @@ import com.mobile_me.imtv_player.model.MTFileApkInfo;
 import com.mobile_me.imtv_player.model.MTGlobalSetupRec;
 import com.mobile_me.imtv_player.model.MTPlayList;
 import com.mobile_me.imtv_player.model.MTPlayListRec;
-import com.mobile_me.imtv_player.service.rest.IMTRestCallbackPlaylist;
 import com.mobile_me.imtv_player.service.rest.MTRestHelper;
 import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,18 +44,9 @@ public class MTLoaderManager implements IMTCallbackEvent {
                 while (!Dao.getInstance(MTLoaderManager.this.ctx).getTerminated()) {
                     for (int i = 0; i<Integer.parseInt(MTLoaderManager.this.ctx.getString(R.string.playlists_count)); i++) {
                         final int numPlayer = i;
-                        helpers.get(numPlayer).loadPlayListFromServer();
+                        //helpers.get(numPlayer).loadPlayListFromServer();
+                        helpers.get(numPlayer).loadPlayListFixedFromServer();
 
-                        // NEW API
-/*                        restHelper.getPlaylist(Dao.getInstance(MTLoaderManager.this.ctx).getDeviceId(), new IMTRestCallbackPlaylist() {
-                            @Override
-                            public void onPlaylistLoaded(MTPlayList playListNew) {
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-                            }
-                        });*/
                     }
                     try {
                         Thread.sleep(Integer.parseInt(MTLoaderManager.this.ctx.getString(R.string.updateplaylist_interval_minutes)) * 60 * 1000);
@@ -89,7 +78,15 @@ public class MTLoaderManager implements IMTCallbackEvent {
         doLoadNextVideoFiles(ownCloudHelper);
     }
 
-    private void doLoadNextVideoFiles(MTOwnCloudHelper ownCloudHelper) {
+    @Override
+    public void onPlayListFixedLoaded(MTPlayList playListNew, MTOwnCloudHelper ownCloudHelper) {
+        CustomExceptionHandler.log("onPlayListFixedLoaded success. playListNew.size="+playListNew.getPlaylist().size());
+        playListNew.setTypePlayList(getPLayListTypeByOwnHandler(ownCloudHelper));
+        Dao.getInstance(ctx).getPlayListFixedDBHelper().savePlayListFixed(playListNew);
+        doLoadNextVideoFiles(ownCloudHelper);
+    }
+
+    private void doLoadNextVideoFiles(final MTOwnCloudHelper ownCloudHelper) {
         CustomExceptionHandler.log("doLoadNextVideoFiles start.");
         int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
         MTPlayList playList = Dao.getInstance(ctx).getPlayListManagerByType(typePlayList).getPlayList();

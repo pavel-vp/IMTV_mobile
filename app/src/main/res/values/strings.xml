@@ -26,6 +26,8 @@
     <string name="good_location_interval_seconds">20</string>
     <!-- интервал проверки wifi (минут) -->
     <string name="checkwifi_interval_minutes">1</string>
+    <!-- интервал проверки gpio (секунд) -->
+    <string name="checkgpio_interval_seconds">5</string>
 
 
 </resources>
