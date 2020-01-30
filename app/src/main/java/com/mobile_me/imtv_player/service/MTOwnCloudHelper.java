@@ -46,23 +46,6 @@ public class MTOwnCloudHelper  {
         restHelper = MTRestHelper.getInstance(this.ctx.getResources().getString(R.string.rest_server_base_url));
     }
 
-    public void loadPlayListFromServer() {
-        CustomExceptionHandler.log("loadPlayListFromServer started" );
-        restHelper.getPlaylist(dao.getDeviceId(), new IMTRestCallbackPlaylist() {
-            @Override
-            public void onPlaylistLoaded(MTPlayList playList) {
-                cb.onPlayListLoaded(playList, MTOwnCloudHelper.this);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                //Log.e(LOG_TAG, t.getMessage());
-                CustomExceptionHandler.logException("loadPlayListFromServer error", t);
-                cb.onError(0, MTOwnCloudHelper.this, t);
-            }
-        });
-    }
-
     public void loadPlayListFixedFromServer() {
         CustomExceptionHandler.log("loadPlayListFixedFromServer started" );
         restHelper.getPlaylistFixed(dao.getDeviceId(), new IMTRestCallbackPlaylist() {

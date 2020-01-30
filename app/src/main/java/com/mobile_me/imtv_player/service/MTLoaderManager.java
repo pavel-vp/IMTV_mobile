@@ -70,32 +70,28 @@ public class MTLoaderManager implements IMTCallbackEvent {
     }
 
     @Override
-    public void onPlayListLoaded(MTPlayList playListNew, MTOwnCloudHelper ownCloudHelper) {
-        CustomExceptionHandler.log("onPlayListLoaded success. playListNew.size="+playListNew.getPlaylist().size());
-        //Toast.makeText(this, "Плейлист загружен", Toast.LENGTH_SHORT).show();
-        playListNew.setTypePlayList(getPLayListTypeByOwnHandler(ownCloudHelper));
-        Dao.getInstance(ctx).getPlayListManagerByType(playListNew.getTypePlayList()).mergeAndSavePlayList(playListNew);
-        doLoadNextVideoFiles(ownCloudHelper);
-    }
-
-    @Override
     public void onPlayListFixedLoaded(MTPlayList playListNew, MTOwnCloudHelper ownCloudHelper) {
         CustomExceptionHandler.log("onPlayListFixedLoaded success. playListNew.size="+playListNew.getPlaylist().size());
         playListNew.setTypePlayList(getPLayListTypeByOwnHandler(ownCloudHelper));
-        Dao.getInstance(ctx).getPlayListFixedDBHelper().savePlayListFixed(playListNew);
+        // Проверим, изменился ли плейлист по сравнению с текущим
+        int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
+        MTPlayList playListOld = Dao.getInstance(ctx).getPlayListManagerByType(typePlayList).getPlayListFixed();
+        if (playListOld == null || !playListOld.isEqualTo(playListNew)) {
+            Dao.getInstance(ctx).getPlayListManagerByType(typePlayList).savePlayListFixed(playListNew);
+        }
         doLoadNextVideoFiles(ownCloudHelper);
     }
 
     private void doLoadNextVideoFiles(final MTOwnCloudHelper ownCloudHelper) {
         CustomExceptionHandler.log("doLoadNextVideoFiles start.");
         int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
-        MTPlayList playList = Dao.getInstance(ctx).getPlayListManagerByType(typePlayList).getPlayList();
+        MTPlayList playList = Dao.getInstance(ctx).getPlayListManagerByType(typePlayList).getPlayListFixed();
 
         // запустить загрузку файлов из плейлиста при необходимости
         MTPlayListRec fileToLoad = Dao.getInstance(ctx).getPlayListManagerByType(playList.getTypePlayList()).getNextFileToLoad();
         CustomExceptionHandler.log("doLoadNextVideoFiles filetoload ="+fileToLoad);
         if (fileToLoad != null) {
-            helpers.get(playList.getTypePlayList() - 1).loadVideoFileFromPlayList(fileToLoad);
+            helpers.get(typePlayList - 1).loadVideoFileFromPlayList(fileToLoad);
         }
     }
 

@@ -63,13 +63,6 @@ public class RestApiTest {
     }
 
     @Test
-    public void getPlayList_test() throws InterruptedException, IOException {
-        // http://crm.darilkin-shop.ru/api/screen/getPlayList.php?code=b8b58378e361
-        MTPlayListRec[] res = restHelper.getPlayListSync("b8b58378e361");
-        System.out.println(Arrays.asList(res));
-    }
-
-    @Test
     public void getPlayListFixed_test() throws InterruptedException, IOException {
         // http://crm.darilkin-shop.ru/api/playlist/getPlayList.php?code=b8b58378e361
         MTPlayListRec[] res = restHelper.getPlayListFixedSync("b8b58378e361");

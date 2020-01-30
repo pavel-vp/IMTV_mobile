@@ -3,6 +3,7 @@ package com.mobile_me.imtv_player.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Created by pasha on 24.12.16.
@@ -43,5 +44,14 @@ public class MTDateRec implements Serializable {
                 "from='" + from + '\'' +
                 ", to='" + to + '\'' +
                 '}';
+    }
+
+    public boolean isEquals(MTDateRec otherDate) {
+        if (otherDate == null) return false;
+        if (Objects.equals(this.from, otherDate.getFrom()) &&
+            Objects.equals(this.to, otherDate.getTo())) {
+            return true;
+        }
+        return false;
     }
 }

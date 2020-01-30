@@ -150,7 +150,6 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
             int type = ((CheckPlayListLocalTask) task).playListType;
             CustomExceptionHandler.log("onBackgroundTaskComplete, r="+ r + ", task="+task);
             if (r) {
-                Dao.getInstance(this).getPlayListManagerByType(type).mergeAndSavePlayList(((CheckPlayListLocalTask) task).playList);
                 Dao.getInstance(this).getPlayListManagerByType(type).savePlayListFixed(((CheckPlayListLocalTask) task).playListFixed);
 
                 loadedCompleted.set(type-1, true);
@@ -158,27 +157,12 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
             } else {
                 // нет локального плейлиста - запускаем задачу первоначальной загрузки в текущем активити (пусть будет логотип)
                 //helpers.get(type - 1).loadPlayListFromServer();
-                helpers.get(type - 1).loadPlayListFromServer();
                 helpers.get(type - 1).loadPlayListFixedFromServer();
             }
         }
         if (task instanceof CheckForSettingsLocalTask) {
             tryStartMainActivity();
         }
-    }
-
-    @Override
-    public void onPlayListLoaded(MTPlayList playListNew, MTOwnCloudHelper ownCloudHelper) {
-        synchronized (this) {
-            // плейлист загружен, запускаем загрузку первого файла
-            int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
-            CustomExceptionHandler.log("onPlayListLoaded success. playListNew.size=" + playListNew.getPlaylist().size() + ", typePlayList=" + typePlayList);
-            //Toast.makeText(this, "Плейлист загружен", Toast.LENGTH_SHORT).show();
-            // запустить загрузку файлов из плейлиста
-            playListNew.setTypePlayList(typePlayList);
-            Dao.getInstance(this).getPlayListManagerByType(typePlayList).mergeAndSavePlayList(playListNew);
-        }
-        tryStart(ownCloudHelper);
     }
 
     @Override
@@ -199,8 +183,7 @@ public class LogoActivity extends AbstractBaseActivity implements IMTCallbackEve
         int typePlayList = getPLayListTypeByOwnHandler(ownCloudHelper);
 
         // пытаемся стартовать, когда загружены оба плейлиста
-        if (Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayList() != null && Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayList().getPlaylist().size() > 0 &&
-            Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed() != null && Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed().getPlaylist().size() > 0 ) {
+        if (Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed() != null && Dao.getInstance(this).getPlayListManagerByType(typePlayList).getPlayListFixed().getPlaylist().size() > 0 ) {
 
             MTPlayListRec fileToLoad = Dao.getInstance(this).getPlayListManagerByType(typePlayList).getNextFileToLoad();
             CustomExceptionHandler.log("fileToLoad=" + fileToLoad);

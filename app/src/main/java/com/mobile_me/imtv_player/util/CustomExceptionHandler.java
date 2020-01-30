@@ -97,6 +97,7 @@ public class CustomExceptionHandler implements UncaughtExceptionHandler
 
     @Override
     public void uncaughtException(Thread thread, Throwable ex) {
+        ex.printStackTrace();
         writeToFile("uncaughtException : " + ex.getMessage());
         final Writer result = new StringWriter();
         final PrintWriter printWriter = new PrintWriter(result);

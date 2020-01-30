@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by pasha on 24.12.16.
@@ -239,6 +240,17 @@ public class MTPlayListRec implements Serializable {
                 ", played=" + played +
                 ", playedTime=" + playedTime +
                 '}';
+    }
+
+    public boolean isEqualTo(MTPlayListRec recOther) {
+        if (recOther == null) return false;
+        if (Objects.equals(this.id, recOther.getId()) &&
+                Objects.equals(this.vpid, recOther.getVpid()) &&
+                Objects.equals(this.filename, recOther.getFilename()) &&
+                Objects.equals(this.md5, recOther.getMd5()) &&
+                this.date.isEquals(recOther.getDate()))
+            return true;
+        return false;
     }
 }
 

@@ -82,11 +82,6 @@ public class StatisticDBHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             CustomExceptionHandler.logException("error ", e);
         }
-        try {
-            db.execSQL(PlayListDBHelper.CREATE_TABLE);
-        } catch (Exception e) {
-            CustomExceptionHandler.logException("error ", e);
-        }
     }
 
     @Override

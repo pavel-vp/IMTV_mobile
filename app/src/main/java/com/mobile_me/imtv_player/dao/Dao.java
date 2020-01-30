@@ -50,7 +50,6 @@ public class Dao {
 
     private Context ctx;
 
-    private PlayListDBHelper mPlayListDBHelper;
     private PlayListFixedDBHelper mPlayListFixedDBHelper;
     private StatisticDBHelper mStatisticDBHelper;
     private SharedPreferences mSharedPreferences;
@@ -82,7 +81,6 @@ public class Dao {
 
     public Dao(Context ctx) {
         this.ctx = ctx;
-        this.mPlayListDBHelper = new PlayListDBHelper(this.ctx);
         this.mPlayListFixedDBHelper = new PlayListFixedDBHelper(this.ctx);
         this.mStatisticDBHelper = new StatisticDBHelper(this.ctx);
         this.mSharedPreferences = ctx.getSharedPreferences("settings", Activity.MODE_PRIVATE);
@@ -116,7 +114,7 @@ public class Dao {
         WifiInfo info = manager.getConnectionInfo();
         deviceId = info.getMacAddress().replace(":", "");
 
-deviceId = "b8b58378e361";  // actual
+//deviceId = "b8b58378e361";  // actual
 //deviceId = "f8a62d97e8ca";
         CustomExceptionHandler.log("version:"+BuildConfig.VERSION_CODE);
         CustomExceptionHandler.log("deviceId:"+deviceId);
@@ -231,11 +229,6 @@ deviceId = "b8b58378e361";  // actual
         // Worst case, resort to internal storage
         return ctx.getFilesDir();
     }
-
-    public PlayListDBHelper getPlayListDBHelper() {
-        return mPlayListDBHelper;
-    }
-
 
     public String getDeviceId() {
         return deviceId;

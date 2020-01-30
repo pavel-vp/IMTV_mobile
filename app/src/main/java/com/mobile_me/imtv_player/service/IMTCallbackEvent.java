@@ -9,7 +9,6 @@ import com.mobile_me.imtv_player.model.MTPlayListRec;
  * Created by pasha on 7/21/16.
  */
 public interface IMTCallbackEvent {
-    void onPlayListLoaded(MTPlayList playList, MTOwnCloudHelper ownCloudHelper);
     void onPlayListFixedLoaded(MTPlayList playList, MTOwnCloudHelper ownCloudHelper);
     void onVideoFileLoaded(MTPlayListRec file, MTOwnCloudHelper ownCloudHelper);
     void onUpdateFileLoaded(MTOwnCloudHelper ownCloudHelper);

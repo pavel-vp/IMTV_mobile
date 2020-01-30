@@ -59,11 +59,6 @@ public class StatUpload implements IMTCallbackEvent  {
 
 
     @Override
-    public void onPlayListLoaded(MTPlayList playList, MTOwnCloudHelper ownCloudHelper) {
-
-    }
-
-    @Override
     public void onPlayListFixedLoaded(MTPlayList playList, MTOwnCloudHelper ownCloudHelper) {
 
     }

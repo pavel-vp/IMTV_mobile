@@ -14,9 +14,6 @@ import java.util.List;
  * Created by pasha on 05.03.18.
  */
 public interface IMTApi {
-    // Загрузить плейлист по девайсу
-    @GET("screen/getPlayList.php")
-    Call<MTPlayListRec[]> getPlayList(@Query("code") String code);
 
     // Загрузить с сервера глобальные настройки
     @GET("screen/getScreenSettings.php")

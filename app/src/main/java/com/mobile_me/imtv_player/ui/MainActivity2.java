@@ -473,7 +473,7 @@ public class MainActivity2 extends Activity implements SensorEventListener, Loca
                 MTPlayListRec found = null;
                 if (type == MTPlayList.TYPEPLAYLIST_1) {
                     // взять из плейлиста следующий непроигранный
-                    if (playListManager.getPlayList() != null) {
+                    if (playListManager.getPlayListFixed() != null) {
                         found = playListManager.getNextVideoFileForPlay(forcedPlay);
                     }
                     // если непроигранного нет - значит все проиграли, запустим поиск с принудительнм возвращением хотя бы одного,

@@ -23,13 +23,11 @@ public class CheckPlayListLocalTask implements Runnable {
     @Override
     public void run() {
         // Запустить считывание с локальной базы,
-        MTPlayList playListNew = Dao.getInstance(IMTVApplication.getInstance()).getPlayListDBHelper().readPlayList(playListType);
         MTPlayList playListFixedNew = Dao.getInstance(IMTVApplication.getInstance()).getPlayListFixedDBHelper().readPlayListFixed(playListType);
-        if (playListNew != null && playListNew.getPlaylist().size() > 0 && playListFixedNew != null && playListFixedNew.getPlaylist().size() > 0) {
+        if (playListFixedNew != null && playListFixedNew.getPlaylist().size() > 0) {
             // если плейлист не пуст, пройтись по нему
             // проверить доступность файла по этому пути. Если нет, отметить это в плейлисте
-            result = Dao.getInstance(IMTVApplication.getInstance()).getPlayListManagerByType(playListType).checkPlayListFilesOnDisk(playListNew);
-            this.playList = playListNew;
+            result = Dao.getInstance(IMTVApplication.getInstance()).getPlayListManagerByType(playListType).checkPlayListFilesOnDisk(playListFixedNew);
             this.playListFixed = playListFixedNew;
         }
     }

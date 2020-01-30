@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MTPlayListManager implements IMTLogger {
 
-    private final MTPlayList playList = new MTPlayList();
     private final MTPlayList playListFixed = new MTPlayList();
     private Context ctx;
     private Dao dao;
@@ -28,23 +27,18 @@ public class MTPlayListManager implements IMTLogger {
     public MTPlayListManager(Context ctx, int typePlayList) {
         this.ctx = ctx;
         this.dao = Dao.getInstance(ctx);
-        this.playList.setTypePlayList(typePlayList);
         CustomExceptionHandler.log("MTPlayListManager created for type="+typePlayList);
-    }
-
-    public MTPlayList getPlayList() {
-        return playList;
     }
 
     public MTPlayListRec getRandomFile() {
         MTPlayListRec found = null;
-        synchronized (playList) {
+        synchronized (playListFixed) {
             int l =(int) (Math.random() * 10);
             for (int i = 0; i < l || found == null; i++) {
-                int idx = i >= playList.getPlaylist().size() ? 0 : i;
+                int idx = i >= playListFixed.getPlaylist().size() ? 0 : i;
 
-                if (playList.getPlaylist().get(idx).getState() == MTPlayListRec.STATE_UPTODATE) {
-                    found = playList.getPlaylist().get(idx);
+                if (playListFixed.getPlaylist().get(idx).getState() == MTPlayListRec.STATE_UPTODATE) {
+                    found = playListFixed.getPlaylist().get(idx);
                 }
             }
         }
@@ -59,8 +53,8 @@ public class MTPlayListManager implements IMTLogger {
      */
     public MTPlayListRec getNextVideoFileForPlay(boolean forcedPlay) {
         MTPlayListRec found = null;
-        synchronized (playList) {
-            CustomExceptionHandler.log("getNextVideoFileForPlay start for playList="+playList+", forcedPLay = "+forcedPlay);
+        synchronized (playListFixed) {
+            CustomExceptionHandler.log("getNextVideoFileForPlay start for playList="+playListFixed+", forcedPLay = "+forcedPlay);
             // ЭТАП 1. поиск файла для проигрывания в этом плейлисте
             found = getNextVideoFileForPlayInternal();
             // ЭТАП 2. не нашли - ищем любой форсированно
@@ -68,7 +62,7 @@ public class MTPlayListManager implements IMTLogger {
                 // если не нашли ни одного для проигрывания - сбросить у всех статус и взять первый загруженный
                 // это делаем, чтобы проигрывание не останавливалось - проигрываем все по кругу
                 // но только если принудительный флаг установлен
-                for (MTPlayListRec f : playList.getPlaylist()) {
+                for (MTPlayListRec f : playListFixed.getPlaylist()) {
                     f.setPlayed(MTPlayListRec.PLAYED_NO);
                     CustomExceptionHandler.log("getNextVideoFileForPlay setPlayed NO for f="+f);
                     if (f.getState() == MTPlayListRec.STATE_UPTODATE) {
@@ -83,7 +77,7 @@ public class MTPlayListManager implements IMTLogger {
                 found.setPlayed(MTPlayListRec.PLAYED_YES);
                 CustomExceptionHandler.log("getNextVideoFileForPlay setPlayed YES for f="+found);
             }
-            Dao.getInstance(ctx).getPlayListDBHelper().updatePlayList(this.playList);
+            Dao.getInstance(ctx).getPlayListFixedDBHelper().savePlayListFixed(this.playListFixed);
         }
         CustomExceptionHandler.log("getNextVideoFileForPlay res2="+found);
         return found;
@@ -120,23 +114,14 @@ public class MTPlayListManager implements IMTLogger {
      */
     private MTPlayListRec getNextVideoFileForPlayInternal() {
         int lastMinutes = 30;
-        this.playListSearch.setMTPlayList(this.playList);
         this.playListSearch.setMTPlayListFixed(this.playListFixed);
-        return this.playListSearch.getNextVideoFileFixed(this, dao.getLastGpsCoordinate(), position);
-    }
-
-    private MTPlayListRec getNextVideoFileForPlayInternal_OLD() {
-        int lastMinutes = 30; // FIXME: в настройки
-        // на входе - статистика за последние 30 мин, текущий плейлист с актуальными файлами для проигрывания
-        List<MTPlayListRec> statList = dao.getmStatisticDBHelper().readStatOnLastNMins(lastMinutes);
-        this.playListSearch.setMTPlayList(this.playList);
-        return this.playListSearch.getNextVideoFile(statList, lastMinutes, this, dao.getLastGpsCoordinate());
+        return this.playListSearch.getNextVideoFileForPlayFixed(this, dao.getLastGpsCoordinate(), position);
     }
 
     public void setFileStateFlag(MTPlayListRec rec, int flag) {
-        synchronized (playList) {
+        synchronized (playListFixed) {
             rec.setState(flag);
-            Dao.getInstance(ctx).getPlayListDBHelper().updatePlayList(this.playList);
+            Dao.getInstance(ctx).getPlayListFixedDBHelper().savePlayListFixed(this.playListFixed);
         }
     }
 
@@ -153,42 +138,8 @@ public class MTPlayListManager implements IMTLogger {
         return inFiles;
     }
 
-    public void mergeAndSavePlayList(MTPlayList playListNew) {
-        synchronized (playList) {
-            CustomExceptionHandler.log("mergeAndSavePlayList playList="+playList + " with new ="+playListNew);
-                if (playListNew == null)
-                    return;
-
-                    // За основу берем новый плейлист, подтягивая данные по статусам из старого (по ИД)
-                    for (MTPlayListRec newR : playListNew.getPlaylist()) {
-                        // попробовать найти этот файл в текущем плейлисте
-                        MTPlayListRec found = this.playList.searchById(newR.getId());
-                        if (found != null) {
-                            newR.setState(found.getState());
-                            newR.setPlayed(found.getPlayed());
-                        }
-                    }
-                    // а также удалить файлы, которых нет уже в новом
-                    // файлы взять из директории
-                    //File dirVideos = new File(dao.getDownVideoFolder());
-                    List<File> files = getListFiles(new File(dao.getVideoPath()));
-                    for (File f : files) {
-                        // если в новом его нет
-                        MTPlayListRec found = playListNew.searchByFileName(f.getAbsolutePath(), dao.getVideoPath());
-                        if (found == null) {
-                            // удалим саму запись, сам видеофайл тоже
-                            CustomExceptionHandler.log("delete old video file "+f.getName());
-                            f.delete();
-                        }
-                    }
-                    this.playList.getPlaylist().clear();
-                    this.playList.getPlaylist().addAll(playListNew.getPlaylist());
-                dao.getPlayListDBHelper().updatePlayList(this.playList);
-        }
-    }
-
     public void savePlayListFixed(MTPlayList playListFixedNew) {
-        synchronized (playList) {
+        synchronized (playListFixedNew) {
             CustomExceptionHandler.log("savePlayListFixed playListFixed=" + playListFixed + " with new =" + playListFixedNew);
             if (playListFixedNew == null)
                 return;
@@ -202,10 +153,10 @@ public class MTPlayListManager implements IMTLogger {
     public MTPlayListRec getNextFileToLoad() {
         CustomExceptionHandler.log("getNextFileToLoad start");
         MTPlayListRec fileToLoad = null;
-        synchronized (playList) {
+        synchronized (playListFixed) {
                 Map<Long, MTPlayListRec> filesToLoad  = new HashMap<>();
                 // по списку файлов пройтись и сравнить их с текущими. Если различаюься - поставить флаг необходимости скачивания
-                for (MTPlayListRec f : playList.getPlaylist()) {
+                for (MTPlayListRec f : playListFixed.getPlaylist()) {
                     // прочитать локальные данные файла
                     File finfo = new File(dao.getVideoPath(), f.getFilename());
                     //log("loadVideoFileFromPlayList check file info for = "+finfo.getAbsolutePath());

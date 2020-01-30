@@ -18,8 +18,8 @@
     <string name="checkid_interval_minutes">1</string>
     <!-- максимально допустимый интервал для необновленного файла глобальных настроек (минут)  -->
     <string name="globalini_expire_interval_minutes">180</string>
-    <!-- интервал обновления плейлистов с сервера (минут)   -->
-    <string name="updateplaylist_interval_minutes">60</string>
+    <!-- интервал проверки обновления плейлистов с сервера (минут)   -->
+    <string name="updateplaylist_interval_minutes">3</string>
     <!-- интервал для определения зависания плеера (максимальное число минут непроигрывания)   -->
     <string name="hang_interval_minutes">11</string>
     <!-- интервал для определения корректности координат (секунд) шаг 4 сек  -->

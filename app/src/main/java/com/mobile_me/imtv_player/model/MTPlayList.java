@@ -63,4 +63,18 @@ public class MTPlayList implements Serializable {
         }
         return null;
     }
+
+    public boolean isEqualTo(MTPlayList otherPlayList) {
+        if (otherPlayList == null || otherPlayList.getPlaylist() == null) return false;
+        if (this.getPlaylist() == null) return false;
+        if (this.getPlaylist().size() != otherPlayList.getPlaylist().size()) return false;
+
+        for (int i = 0; i< this.getPlaylist().size(); i++) {
+            MTPlayListRec rec1 = this.getPlaylist().get(i);
+            MTPlayListRec rec2 = otherPlayList.getPlaylist().get(i);
+            if (!rec1.isEqualTo(rec2)) return false;
+        }
+        return true;
+    }
+
 }
