@@ -6,6 +6,7 @@ import com.mobile_me.imtv_player.util.CustomExceptionHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,10 +21,10 @@ public class GpioCheckTask {
         this.dao = dao;
 
         // Только один раз (инициализация)
-        execCmd(new String[] {"echo", "gpio13", ">", "/sys/class/gpio/export"});
-        execCmd(new String[] {"echo", "gpio14", ">", "/sys/class/gpio/export"});
-        execCmd(new String[] {"echo", "out", ">", "/sys/class/gpio/gpio13/direction"});
-        execCmd(new String[] {"echo", "input", ">", "/sys/class/gpio/gpio14/direction"});
+        execCmd("sh -c echo 13 > /sys/class/gpio/export");
+        execCmd("sh -c echo 14 > /sys/class/gpio/export");
+        execCmd("sh -c echo out > /sys/class/gpio/gpio13/direction");
+        execCmd("sh -c echo input > /sys/class/gpio/gpio14/direction");
 
 
 
@@ -31,34 +32,20 @@ public class GpioCheckTask {
             @Override
             public void run() {
                 CustomExceptionHandler.log("GpioCheckTask starts");
-                execCmd(new String[] {"echo", "1", ">", "/sys/class/gpio/gpio13/value"});
+                execCmd("sh -c echo 1 > /sys/class/gpio/gpio13/value");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                execCmd(new String[] {"echo", "0", ">", "/sys/class/gpio/gpio13/value"});
+                execCmd("sh -c echo 0 > /sys/class/gpio/gpio13/value");
 
-                Process process14 = null;
-                try {
-                    process14 = Runtime.getRuntime().exec(new String[] {   "cat", "/sys/class/gpio/gpio14/value" });
-                    BufferedReader in = new BufferedReader(new InputStreamReader(process14.getInputStream()));
-                    String b = in.readLine();
-                    if (b != null) {
-                        CustomExceptionHandler.log("GpioCheckTask 14 response " + b );
-                        lastGpio14Data = b;
-                    }
-                } catch (Throwable t) {
-                    CustomExceptionHandler.log("GpioCheckTask 14 error " + t.getMessage() );
-                } finally {
-                    if (process14 != null) process14.destroy();
-                }
             }
         }, 0, Long.parseLong(dao.getContext().getResources().getString(R.string.checkgpio_interval_seconds)), TimeUnit.SECONDS);
     }
 
-    private void execCmd(String[] cmd) {
-        CustomExceptionHandler.log("GpioCheckTask task " + cmd );
+    private void execCmd(String cmd) {
+        CustomExceptionHandler.log("GpioCheckTask task " + cmd);
         Process process1 = null;
         try {
             process1 = Runtime.getRuntime().exec(cmd);
